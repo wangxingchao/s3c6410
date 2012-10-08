@@ -1,0 +1,11 @@
+
+1  JPEG Hardware decode 
+
+2  Qtopia has  not   black block
+
+3  FIMC driver change
+
+//4  4.3 LCD driver fb0  virture size  (and 3.5,5,6,7,8/10.4 all change fb0 virture size)
+
+#define S3CFB_VRES_VIRTUAL	272	/* line cnt       y resolution */  //dg change 544 to 272 ,I think that 272 is right in the driver of LCD4.3
+
