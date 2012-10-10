@@ -1235,7 +1235,7 @@ static int __init s3c64xx_spi_init(void)
 {
 	return platform_driver_probe(&s3c64xx_spi_driver, s3c64xx_spi_probe);
 }
-subsys_initcall(s3c64xx_spi_init);
+module_init(s3c64xx_spi_init);
 
 static void __exit s3c64xx_spi_exit(void)
 {
