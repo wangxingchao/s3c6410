@@ -1226,6 +1226,7 @@ static struct platform_driver s3c64xx_spi_driver = {
 		.owner = THIS_MODULE,
 	},
 	.remove = s3c64xx_spi_remove,
+	.probe = s3c64xx_spi_probe,
 	.suspend = s3c64xx_spi_suspend,
 	.resume = s3c64xx_spi_resume,
 };
@@ -1233,7 +1234,13 @@ MODULE_ALIAS("platform:s3c64xx-spi");
 
 static int __init s3c64xx_spi_init(void)
 {
-	return platform_driver_probe(&s3c64xx_spi_driver, s3c64xx_spi_probe);
+	printk("### S3c64xx SPI driver ### \n");
+	if (platform_driver_register(&s3c64xx_spi_driver) != 0) {
+		printk("fail to register platform device\n");
+		return -EPERM;
+	}
+
+	return 0;
 }
 module_init(s3c64xx_spi_init);
 
