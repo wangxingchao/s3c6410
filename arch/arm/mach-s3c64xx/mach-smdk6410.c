@@ -613,6 +613,9 @@ static struct platform_device *smdk6410_devices[] __initdata = {
 #ifdef CONFIG_SMDK6410_SD_CH1
 	&s3c_device_hsmmc1,
 #endif  */
+	/*add by fatfish*/
+	&s3c64xx_device_spi0,
+	&s3c64xx_device_spi1,
 
 	&s3c_device_hsmmc0,
 	&s3c_device_hsmmc1,
@@ -672,8 +675,8 @@ static struct platform_device *smdk6410_devices[] __initdata = {
 	&s3c_device_keypad,
 
 	/*add by fatfish*/
-	&s3c64xx_device_spi0,
-	&s3c64xx_device_spi1,
+	//&s3c64xx_device_spi0,
+//	&s3c64xx_device_spi1,
 };
 
 #ifdef CONFIG_REGULATOR
@@ -1140,7 +1143,7 @@ static void __init smdk6410_machine_init(void)
 	spi_register_board_info(forlinx6410_mc251x_info,ARRAY_SIZE(forlinx6410_mc251x_info));
 	samsung_keypad_set_platdata(&smdk6410_keypad_data);
 	platform_add_devices(smdk6410_devices, ARRAY_SIZE(smdk6410_devices));
-	printk(KERN_INFO "Adding SPI infomation, Check SPI register\n");
+	printk(KERN_INFO "Adding SPI infomation, Check SPI register v4\n");
 }
 
 MACHINE_START(SMDK6410, "SMDK6410")

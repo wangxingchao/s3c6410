@@ -111,11 +111,11 @@ int platform_add_devices(struct platform_device **devs, int num)
 	int i, ret = 0;
 
 	for (i = 0; i < num; i++) {
+		//printk(KERN_INFO "S3c6410: Add Platform Device %s\n", devs[i]->name);
 		ret = platform_device_register(devs[i]);
 		if (ret) {
 			while (--i >= 0)
 				platform_device_unregister(devs[i]);
-			break;
 		}
 	}
 
@@ -281,8 +281,8 @@ int platform_device_add(struct platform_device *pdev)
 		}
 	}
 
-	pr_debug("Registering platform device '%s'. Parent at %s\n",
-		 dev_name(&pdev->dev), dev_name(pdev->dev.parent));
+	//printk(KERN_INFO "### S3c6410:Registering platform device '%s'. Parent at %s\n",
+		 //dev_name(&pdev->dev), dev_name(pdev->dev.parent));
 
 	ret = device_add(&pdev->dev);
 	if (ret == 0)

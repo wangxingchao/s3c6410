@@ -965,8 +965,8 @@ static int __init s3c64xx_spi_probe(struct platform_device *pdev)
 	struct s3c64xx_spi_info *sci;
 	struct spi_master *master;
 	int ret;
-		printk("\n@@@@@@@@@@@@@@@@@@@@\n");
-	printk("s3c64xx_spi_probe 1111111111111111");
+	printk(KERN_INFO "\n@@@@@@@@@@@@@@@@@@@@\n");
+	printk(KERN_INFO "s3c64xx_spi_probe 1111111111111111");
 	printk("\n@@@@@@@@@@@@@@@@@@@@\n");
 	if (pdev->id < 0) {
 		dev_err(&pdev->dev,
@@ -1234,7 +1234,7 @@ MODULE_ALIAS("platform:s3c64xx-spi");
 
 static int __init s3c64xx_spi_init(void)
 {
-	printk("### S3c64xx SPI driver ### \n");
+	printk(KERN_INFO "### S3c64xx SPI driver ### \n");
 	if (platform_driver_register(&s3c64xx_spi_driver) != 0) {
 		printk("fail to register platform device\n");
 		return -EPERM;
@@ -1242,7 +1242,7 @@ static int __init s3c64xx_spi_init(void)
 
 	return 0;
 }
-subsys_initcall(s3c64xx_spi_init);
+module_init(s3c64xx_spi_init);
 
 static void __exit s3c64xx_spi_exit(void)
 {
