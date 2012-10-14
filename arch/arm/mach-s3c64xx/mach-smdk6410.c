@@ -201,6 +201,12 @@ static struct s3c64xx_spi_csinfo s3c64xx_spi1_csinfo = {
   	.set_level=cs_set_level,
 };
 
+static struct s3c64xx_spi_csinfo s3c64xx_spi0_csinfo = {
+  	.fb_delay=0x3,
+  	.line=S3C64XX_GPC(3),
+  	.set_level=cs_set_level,
+};
+
 static int mcp251x_ioSetup(struct spi_device *spi)
 {
 	printk(KERN_INFO "mcp251x: setup gpio pins CS and External Int\n");
@@ -239,6 +245,7 @@ static struct spi_board_info __initdata spi_eeprom[] = {
 		.bus_num = 0,
 		.chip_select = 0,
 		.mode = SPI_MODE_0,	
+		.controller_data=&s3c64xx_spi0_csinfo,
 	},
 };
 
