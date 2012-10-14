@@ -230,20 +230,17 @@ static struct spi_board_info __initdata forlinx6410_mc251x_info[]  = {
 		.mode = SPI_MODE_0,	
 		.controller_data=&s3c64xx_spi1_csinfo,
 	},
-	{	
-		.modalias = "spidev",
-		.bus_num = 1,
-		.chip_select = 1,
-	},
 };
 
-#if 0
-static struct spi_board_info __initdata spidev[] = {
+static struct spi_board_info __initdata spi_eeprom[] = {
 	{
-
+		.modalias = "spidev",	
+		.max_speed_hz = 10*1000*1000,	
+		.bus_num = 0,
+		.chip_select = 0,
+		.mode = SPI_MODE_0,	
 	},
 };
-#endif
 
 /* framebuffer and LCD setup. */
 
@@ -1151,6 +1148,7 @@ static void __init smdk6410_machine_init(void)
 	s3c64xx_spi_set_info(0,0,1);
 	s3c64xx_spi_set_info(1,0,1);
 	spi_register_board_info(forlinx6410_mc251x_info,ARRAY_SIZE(forlinx6410_mc251x_info));
+	spi_register_board_info(spi_eeprom,ARRAY_SIZE(spi_eeprom));
 	samsung_keypad_set_platdata(&smdk6410_keypad_data);
 	platform_add_devices(smdk6410_devices, ARRAY_SIZE(smdk6410_devices));
 	printk(KERN_INFO "Adding SPI infomation, Check SPI register v4\n");
