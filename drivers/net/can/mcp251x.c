@@ -980,9 +980,9 @@ static int __devinit mcp251x_can_probe(struct spi_device *spi)
 	struct mcp251x_platform_data *pdata = spi->dev.platform_data;
 	int ret = -ENODEV;
 
-	printk("\n@@@@@@@@@@@@@@@@@@@@\n");
-	printk("mcp251x probe 1111111111111111");
-	printk("\n@@@@@@@@@@@@@@@@@@@@\n");
+	printk(KERN_INFO "\n@@@@@@@@@@@@@@@@@@@@\n");
+	printk(KERN_INFO "mcp251x probe 1111111111111111");
+	printk(KERN_INFO "\n@@@@@@@@@@@@@@@@@@@@\n");
 
 	if (!pdata)
 		/* Platform data is required for osc freq */

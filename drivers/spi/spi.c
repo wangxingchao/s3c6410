@@ -455,6 +455,7 @@ static void spi_match_master_to_boardinfo(struct spi_master *master,
 	if (master->bus_num != bi->bus_num)
 		return;
 
+	printk(KERN_INFO "###SPI: add new spi device %s on master bus %d\n", bi->modalias, master->bus_num);
 	dev = spi_new_device(master, bi);
 	if (!dev)
 		dev_err(master->dev.parent, "can't create new device for %s\n",

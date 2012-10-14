@@ -967,8 +967,8 @@ static int __init s3c64xx_spi_probe(struct platform_device *pdev)
 	struct spi_master *master;
 	int ret;
 	printk(KERN_INFO "\n@@@@@@@@@@@@@@@@@@@@\n");
-	printk(KERN_INFO "s3c64xx_spi_probe 1111111111111111");
-	printk("\n@@@@@@@@@@@@@@@@@@@@\n");
+	printk(KERN_INFO "SPI: s3c64xx_spi_probe ");
+	printk(KERN_INFO "\n@@@@@@@@@@@@@@@@@@@@\n");
 	if (pdev->id < 0) {
 		dev_err(&pdev->dev,
 				"Invalid platform device id-%d\n", pdev->id);

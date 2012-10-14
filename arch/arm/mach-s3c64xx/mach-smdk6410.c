@@ -230,10 +230,20 @@ static struct spi_board_info __initdata forlinx6410_mc251x_info[]  = {
 		.mode = SPI_MODE_0,	
 		.controller_data=&s3c64xx_spi1_csinfo,
 	},
+	{	
+		.modalias = "spidev",
+		.bus_num = 1,
+		.chip_select = 1,
+	},
 };
 
+#if 0
+static struct spi_board_info __initdata spidev[] = {
+	{
 
-
+	},
+};
+#endif
 
 /* framebuffer and LCD setup. */
 
