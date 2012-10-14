@@ -33,3 +33,5 @@ obj-$(CONFIG_LIS3L02DQ)	+= lis3l02dq.o
 
 sca3000-y		:= sca3000_core.o sca3000_ring.o
 obj-$(CONFIG_SCA3000)	+= sca3000.o
+
+obj-$(CONFIG_SPI_EEPROM) += spi_eeprom.o
