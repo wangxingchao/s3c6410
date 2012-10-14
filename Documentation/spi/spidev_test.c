@@ -23,6 +23,8 @@
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 
+#define SPI_NO_CS	0x40
+#define SPI_READY	0x80
 static void pabort(const char *s)
 {
 	perror(s);

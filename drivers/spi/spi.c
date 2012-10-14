@@ -619,6 +619,7 @@ int spi_register_master(struct spi_master *master)
 		goto done;
 	dev_dbg(dev, "registered master %s%s\n", dev_name(&master->dev),
 			dynamic ? " (dynamic)" : "");
+	printk(KERN_INFO "#### SPI: Register Master\n");
 
 	mutex_lock(&board_lock);
 	list_add_tail(&master->list, &spi_master_list);

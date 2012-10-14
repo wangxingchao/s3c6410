@@ -930,6 +930,7 @@ static void s3c64xx_spi_hwinit(struct s3c64xx_spi_driver_data *sdd, int channel)
 	void __iomem *regs = sdd->regs;
 	unsigned int val;
 
+	printk(KERN_INFO "#### SPI: HW initialize...\n");
 	sdd->cur_speed = 0;
 
 	S3C64XX_SPI_DEACT(sdd);
