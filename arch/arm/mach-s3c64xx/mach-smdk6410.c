@@ -1140,6 +1140,7 @@ static void __init smdk6410_machine_init(void)
 	spi_register_board_info(forlinx6410_mc251x_info,ARRAY_SIZE(forlinx6410_mc251x_info));
 	samsung_keypad_set_platdata(&smdk6410_keypad_data);
 	platform_add_devices(smdk6410_devices, ARRAY_SIZE(smdk6410_devices));
+	printk(KERN_INFO "Adding SPI infomation, Check SPI register\n");
 }
 
 MACHINE_START(SMDK6410, "SMDK6410")
