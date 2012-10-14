@@ -240,7 +240,8 @@ static struct spi_board_info __initdata forlinx6410_mc251x_info[]  = {
 
 static struct spi_board_info __initdata spi_eeprom[] = {
 	{
-		.modalias = "spidev",	
+		//.modalias = "spidev",	
+		.modalias = "spi_eeprom",	
 		.max_speed_hz = 10*1000*1000,	
 		.bus_num = 0,
 		.chip_select = 0,
