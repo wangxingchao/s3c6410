@@ -55,6 +55,7 @@ static int s3c64xx_spi_cfg_gpio(struct platform_device *pdev)
 		return -EINVAL;
 	}
 
+	//configure gpc 0~3 gpc 4~6 as function 2, spi function mode
 	s3c_gpio_cfgall_range(base, 3,
 			      S3C_GPIO_SFN(2), S3C_GPIO_PULL_UP);
 

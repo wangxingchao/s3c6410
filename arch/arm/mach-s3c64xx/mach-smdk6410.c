@@ -240,8 +240,8 @@ static struct spi_board_info __initdata forlinx6410_mc251x_info[]  = {
 
 static struct spi_board_info __initdata spi_eeprom[] = {
 	{
-		//.modalias = "spidev",	
-		.modalias = "spi_eeprom",	
+		.modalias = "spidev",	
+		//.modalias = "spi_eeprom",	
 		.max_speed_hz = 10*1000*1000,	
 		.bus_num = 0,
 		.chip_select = 0,
@@ -1155,11 +1155,12 @@ static void __init smdk6410_machine_init(void)
 	
 	s3c64xx_spi_set_info(0,0,1);
 	s3c64xx_spi_set_info(1,0,1);
+	//printk(KERN_INFO "SPI: Only Register Bus number 1, spidev for test\n");
 	spi_register_board_info(forlinx6410_mc251x_info,ARRAY_SIZE(forlinx6410_mc251x_info));
 	spi_register_board_info(spi_eeprom,ARRAY_SIZE(spi_eeprom));
 	samsung_keypad_set_platdata(&smdk6410_keypad_data);
 	platform_add_devices(smdk6410_devices, ARRAY_SIZE(smdk6410_devices));
-	printk(KERN_INFO "Adding SPI infomation, Check SPI register v4\n");
+	printk(KERN_INFO "Adding SPI infomation, Check SPI register v6\n");
 }
 
 MACHINE_START(SMDK6410, "SMDK6410")
