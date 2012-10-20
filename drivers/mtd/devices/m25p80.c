@@ -833,6 +833,7 @@ static int __devinit m25p_probe(struct spi_device *spi)
 	 * a chip ID, try the JEDEC id commands; they'll work for most
 	 * newer chips, even if we don't recognize the particular chip.
 	 */
+	printk(KERN_INFO "SPI: Probe M25p32 chip flash\n");
 	data = spi->dev.platform_data;
 	if (data && data->type) {
 		const struct spi_device_id *plat_id;
@@ -1040,6 +1041,7 @@ static struct spi_driver m25p80_driver = {
 
 static int __init m25p80_init(void)
 {
+	printk(KERN_INFO "SPI: M25P80 Register\n");
 	return spi_register_driver(&m25p80_driver);
 }
 
