@@ -310,6 +310,7 @@ static inline void enable_cs(struct s3c64xx_spi_driver_data *sdd,
 {
 	struct s3c64xx_spi_csinfo *cs;
 
+	printk(KERN_INFO "SPI: Enable CS, High First, Low Then\n");
 	if (sdd->tgl_spi != NULL) { /* If last device toggled after mssg */
 		if (sdd->tgl_spi != spi) { /* if last mssg on diff device */
 			/* Deselect the last toggled device */
@@ -850,6 +851,9 @@ static int s3c64xx_spi_setup(struct spi_device *spi)
 		dev_err(&spi->dev, "No CS for SPI(%d)\n", spi->chip_select);
 		return -ENODEV;
 	}
+
+	if (cs->cfg_io)
+		cs->cfg_io();
 
 	sdd = spi_master_get_devdata(spi->master);
 	sci = sdd->cntrlr_info;

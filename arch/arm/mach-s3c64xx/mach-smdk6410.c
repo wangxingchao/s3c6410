@@ -86,6 +86,7 @@
 //for spi  add by fatfish
 #include <plat/s3c64xx-spi.h>
 #include <linux/spi/spi.h>
+#include <linux/spi/flash.h>
 
 //for mcp251x  add by fatfish
 #include <linux/can/platform/mcp251x.h>
@@ -192,6 +193,7 @@ static struct platform_device s3c_device_dm9000 = {
 
 /*add by fatfish for mcp251x*/
 static void  cs_set_level(unsigned line_id, int lvl) {
+    printk(KERN_INFO "SPI: cs set level\n");
     gpio_direction_output(line_id, lvl);
 };
 
@@ -201,10 +203,18 @@ static struct s3c64xx_spi_csinfo s3c64xx_spi1_csinfo = {
   	.set_level=cs_set_level,
 };
 
+static void setup_pin_cs0(void)
+{
+	printk(KERN_INFO "SPI: Set output pin 3 enabled\n");
+	s3c_gpio_setpull(S3C64XX_GPC(3), S3C_GPIO_PULL_NONE);	// Manual chip select pin as used in 6410_set_cs
+	s3c_gpio_cfgpin(S3C64XX_GPC(3), S3C_GPIO_OUTPUT);		// Manual chip select pin as used in 6410_set_cs
+};
+
 static struct s3c64xx_spi_csinfo s3c64xx_spi0_csinfo = {
   	.fb_delay=0x3,
   	.line=S3C64XX_GPC(3),
   	.set_level=cs_set_level,
+	.cfg_io = setup_pin_cs0,
 };
 
 static int mcp251x_ioSetup(struct spi_device *spi)
@@ -238,11 +248,17 @@ static struct spi_board_info __initdata forlinx6410_mc251x_info[]  = {
 	},
 };
 
+struct flash_platform_data m25p32_data = {
+	.name 		= "spi-flash",
+	.type 		= "m25p32",
+	.parts		= NULL,
+	.nr_parts	= 0,
+};
+
 static struct spi_board_info __initdata spi_eeprom[] = {
 	{
 		.modalias = "m25p32",	
-		//.platform_data = &s3c_spi_flash,
-		.platform_data = NULL,
+		.platform_data = &m25p32_data,
 		.irq = -1,
 		.max_speed_hz = 24*1000*1000,	
 		.bus_num = 0,
@@ -1162,7 +1178,7 @@ static void __init smdk6410_machine_init(void)
 	spi_register_board_info(spi_eeprom,ARRAY_SIZE(spi_eeprom));
 	samsung_keypad_set_platdata(&smdk6410_keypad_data);
 	platform_add_devices(smdk6410_devices, ARRAY_SIZE(smdk6410_devices));
-	printk(KERN_INFO "Adding SPI infomation, Check SPI register v6\n");
+	printk(KERN_INFO "Adding SPI infomation, Check SPI register v8\n");
 }
 
 MACHINE_START(SMDK6410, "SMDK6410")

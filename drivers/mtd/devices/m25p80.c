@@ -786,7 +786,10 @@ static const struct spi_device_id *__devinit jedec_probe(struct spi_device *spi)
 	 * string for after vendor-specific data, after the three bytes
 	 * we use here.  Supporting some chips might require using it.
 	 */
+	memset(id, sizeof(id), 0);
+	printk(KERN_INFO "SPI: ### Probe spi id\n");
 	tmp = spi_write_then_read(spi, &code, 1, id, 5);
+	printk(KERN_INFO "SPI: ### Probe error? %d\n", tmp);
 	if (tmp < 0) {
 		DEBUG(MTD_DEBUG_LEVEL0, "%s: error %d reading JEDEC ID\n",
 			dev_name(&spi->dev), tmp);
