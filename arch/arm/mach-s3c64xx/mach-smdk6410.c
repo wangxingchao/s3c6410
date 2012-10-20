@@ -192,9 +192,10 @@ static struct platform_device s3c_device_dm9000 = {
 
 
 /*add by fatfish for mcp251x*/
+static int request_cs_gpio;
 static void  cs_set_level(unsigned line_id, int lvl) {
-    printk(KERN_INFO "SPI: cs set level\n");
-    gpio_direction_output(line_id, lvl);
+ 	printk(KERN_INFO "SPI: cs set level\n");
+    	gpio_direction_output(line_id, lvl);
 };
 
 static struct s3c64xx_spi_csinfo s3c64xx_spi1_csinfo = {
@@ -205,6 +206,11 @@ static struct s3c64xx_spi_csinfo s3c64xx_spi1_csinfo = {
 
 static void setup_pin_cs0(void)
 {
+	int ret;
+	ret = gpio_request(S3C64XX_GPC(3), "CS0");
+	if (ret) {
+		printk(KERN_ERR "SPI: Setup CS-Pin0 Error\n");
+	}
 	printk(KERN_INFO "SPI: Set output pin 3 enabled\n");
 	s3c_gpio_setpull(S3C64XX_GPC(3), S3C_GPIO_PULL_NONE);	// Manual chip select pin as used in 6410_set_cs
 	s3c_gpio_cfgpin(S3C64XX_GPC(3), S3C_GPIO_OUTPUT);		// Manual chip select pin as used in 6410_set_cs
@@ -263,7 +269,7 @@ static struct spi_board_info __initdata spi_eeprom[] = {
 		.max_speed_hz = 24*1000*1000,	
 		.bus_num = 0,
 		.chip_select = 0,
-		.mode = SPI_MODE_0,	
+		.mode = SPI_MODE_3,	
 		.controller_data=&s3c64xx_spi0_csinfo,
 	},
 };

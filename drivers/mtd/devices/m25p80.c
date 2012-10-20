@@ -780,6 +780,9 @@ static spi_flash_loop_test(struct spi_device *spi)
 	u8			id[5];
 	u32			jedec;
 	int i, j;
+	ssize_t retval;
+	u8 code2 = OPCODE_RDSR;
+	u8 val;
 
 	memset(id, sizeof(id), 0);
 
@@ -789,12 +792,21 @@ static spi_flash_loop_test(struct spi_device *spi)
 			DEBUG(MTD_DEBUG_LEVEL0, "%s: error %d reading JEDEC ID\n",
 				dev_name(&spi->dev), tmp);
 		} else {
-			printk(KERN_INFO " JEDEC ");
+			printk(KERN_INFO " JEDEC");
 			for (j=0; j<5; j++) {
-				printk(KERN_INFO " %d", id[j]);
+				printk(KERN_INFO "%x", id[j]);
 			}
 			printk("\n");
 		}
+	}
+
+	for (i=0; i < 20; i++) {
+		retval = spi_write_then_read(spi, &code2, 1, &val, 1);
+
+		if (retval < 0) {
+			printk(KERN_INFO "SPI: read error!\n");
+		}
+		printk(KERN_INFO "SPI: status %x\n", val);
 	}
 }
 
