@@ -773,6 +773,31 @@ static const struct spi_device_id m25p_ids[] = {
 };
 MODULE_DEVICE_TABLE(spi, m25p_ids);
 
+static spi_flash_loop_test(struct spi_device *spi)
+{
+	int			tmp;
+	u8			code = OPCODE_RDID;
+	u8			id[5];
+	u32			jedec;
+	int i, j;
+
+	memset(id, sizeof(id), 0);
+
+	for (i=0; i < 100; i++) {
+		tmp = spi_write_then_read(spi, &code, 1, id, 5);
+		if (tmp < 0) {
+			DEBUG(MTD_DEBUG_LEVEL0, "%s: error %d reading JEDEC ID\n",
+				dev_name(&spi->dev), tmp);
+		} else {
+			printk(KERN_INFO " JEDEC ");
+			for (j=0; j<5; j++) {
+				printk(KERN_INFO " %d", id[j]);
+			}
+			printk("\n");
+		}
+	}
+}
+
 static const struct spi_device_id *__devinit jedec_probe(struct spi_device *spi)
 {
 	int			tmp;
@@ -812,6 +837,7 @@ static const struct spi_device_id *__devinit jedec_probe(struct spi_device *spi)
 		}
 	}
 	dev_err(&spi->dev, "unrecognized JEDEC id %06x\n", jedec);
+	spi_flash_loop_test(spi);
 	return ERR_PTR(-ENODEV);
 }
 
