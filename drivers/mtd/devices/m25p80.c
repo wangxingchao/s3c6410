@@ -782,9 +782,10 @@ static spi_flash_loop_test(struct spi_device *spi)
 	int i, j;
 	ssize_t retval;
 	u8 code2 = OPCODE_RDSR;
-	u8 val;
+	u8 val = 0;
 
 	memset(id, sizeof(id), 0);
+	printk(KERN_INFO "SPI: spi_flash_loop_test \n");
 
 	for (i=0; i < 100; i++) {
 		tmp = spi_write_then_read(spi, &code, 1, id, 5);
@@ -838,18 +839,21 @@ static const struct spi_device_id *__devinit jedec_probe(struct spi_device *spi)
 	jedec = jedec << 8;
 	jedec |= id[2];
 
+	jedec = 0x202016;
 	ext_jedec = id[3] << 8 | id[4];
+	ext_jedec = 0;
 
 	for (tmp = 0; tmp < ARRAY_SIZE(m25p_ids) - 1; tmp++) {
 		info = (void *)m25p_ids[tmp].driver_data;
 		if (info->jedec_id == jedec) {
 			if (info->ext_id != 0 && info->ext_id != ext_jedec)
 				continue;
+			spi_flash_loop_test(spi);
 			return &m25p_ids[tmp];
 		}
 	}
 	dev_err(&spi->dev, "unrecognized JEDEC id %06x\n", jedec);
-	spi_flash_loop_test(spi);
+	//spi_flash_loop_test(spi);
 	return ERR_PTR(-ENODEV);
 }
 
@@ -901,6 +905,7 @@ static int __devinit m25p_probe(struct spi_device *spi)
 		if (IS_ERR(jid)) {
 			return PTR_ERR(jid);
 		} else if (jid != id) {
+			printk(KERN_INFO "SPI: Force use worng JID\n");
 			/*
 			 * JEDEC knows better, so overwrite platform ID. We
 			 * can't trust partitions any longer, but we'll let
