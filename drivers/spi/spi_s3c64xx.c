@@ -24,6 +24,7 @@
 #include <linux/delay.h>
 #include <linux/clk.h>
 #include <linux/dma-mapping.h>
+#define DEBUG	1
 #include <linux/platform_device.h>
 #include <linux/spi/spi.h>
 
@@ -614,6 +615,7 @@ static void handle_msg(struct s3c64xx_spi_driver_data *sdd,
 	u32 speed;
 	u8 bpw;
 
+	printk(KERN_INFO "SPI: Handle message in SPI controller\n");
 	/* If Master's(controller) state differs from that needed by Slave */
 	if (sdd->cur_speed != spi->max_speed_hz
 			|| sdd->cur_mode != spi->mode

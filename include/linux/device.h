@@ -856,7 +856,7 @@ static inline int _dev_info(const struct device *dev, const char *fmt, ...)
 
 #if defined(DEBUG)
 #define dev_dbg(dev, format, arg...)		\
-	dev_printk(KERN_DEBUG, dev, format, ##arg)
+	dev_printk(KERN_INFO, dev, format, ##arg)
 #elif defined(CONFIG_DYNAMIC_DEBUG)
 #define dev_dbg(dev, format, ...)		     \
 do {						     \
