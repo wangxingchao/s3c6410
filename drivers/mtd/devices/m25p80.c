@@ -787,7 +787,7 @@ static spi_flash_loop_test(struct spi_device *spi)
 	memset(id, sizeof(id), 0);
 	printk(KERN_INFO "SPI: spi_flash_loop_test \n");
 
-	for (i=0; i < 100; i++) {
+	for (i=0; i < 10; i++) {
 		tmp = spi_write_then_read(spi, &code, 1, id, 5);
 		if (tmp < 0) {
 			DEBUG(MTD_DEBUG_LEVEL0, "%s: error %d reading JEDEC ID\n",
@@ -801,7 +801,7 @@ static spi_flash_loop_test(struct spi_device *spi)
 		}
 	}
 
-	for (i=0; i < 20; i++) {
+	for (i=0; i < 5; i++) {
 		retval = spi_write_then_read(spi, &code2, 1, &val, 1);
 
 		if (retval < 0) {
