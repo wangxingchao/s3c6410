@@ -417,7 +417,7 @@ static int m25p80_write(struct mtd_info *mtd, loff_t to, size_t len,
 	struct spi_transfer t[2];
 	struct spi_message m;
 
-	DEBUG(MTD_DEBUG_LEVEL2, "%s: %s %s 0x%08x, len %zd\n",
+	printk(KERN_INFO "%s: %s %s 0x%08x, len %zd\n",
 			dev_name(&flash->spi->dev), __func__, "to",
 			(u32)to, len);
 
@@ -787,7 +787,7 @@ static spi_flash_loop_test(struct spi_device *spi)
 	memset(id, sizeof(id), 0);
 	printk(KERN_INFO "SPI: spi_flash_loop_test \n");
 
-	for (i=0; i < 10; i++) {
+	for (i=0; i < 100; i++) {
 		tmp = spi_write_then_read(spi, &code, 1, id, 5);
 		if (tmp < 0) {
 			DEBUG(MTD_DEBUG_LEVEL0, "%s: error %d reading JEDEC ID\n",
@@ -839,7 +839,7 @@ static const struct spi_device_id *__devinit jedec_probe(struct spi_device *spi)
 	jedec = jedec << 8;
 	jedec |= id[2];
 
-	jedec = 0x202016;
+	//jedec = 0x202016;
 	ext_jedec = id[3] << 8 | id[4];
 	ext_jedec = 0;
 
@@ -848,11 +848,12 @@ static const struct spi_device_id *__devinit jedec_probe(struct spi_device *spi)
 		if (info->jedec_id == jedec) {
 			if (info->ext_id != 0 && info->ext_id != ext_jedec)
 				continue;
-			spi_flash_loop_test(spi);
+			//spi_flash_loop_test(spi);
 			return &m25p_ids[tmp];
 		}
 	}
 	dev_err(&spi->dev, "unrecognized JEDEC id %06x\n", jedec);
+	printk(KERN_INFO "unrecognized JEDEC id %06x\n", jedec);
 	//spi_flash_loop_test(spi);
 	return ERR_PTR(-ENODEV);
 }
@@ -913,6 +914,8 @@ static int __devinit m25p_probe(struct spi_device *spi)
 			 * marked read-only, and we don't want to lose that
 			 * information, even if it's not 100% accurate.
 			 */
+			printk(KERN_INFO "found %s, expected %s\n",
+				 jid->name, id->name);
 			dev_warn(&spi->dev, "found %s, expected %s\n",
 				 jid->name, id->name);
 			id = jid;
@@ -992,7 +995,7 @@ static int __devinit m25p_probe(struct spi_device *spi)
 	dev_info(&spi->dev, "%s (%lld Kbytes)\n", id->name,
 			(long long)flash->mtd.size >> 10);
 
-	DEBUG(MTD_DEBUG_LEVEL2,
+	printk(KERN_INFO
 		"mtd .name = %s, .size = 0x%llx (%lldMiB) "
 			".erasesize = 0x%.8x (%uKiB) .numeraseregions = %d\n",
 		flash->mtd.name,
@@ -1002,7 +1005,7 @@ static int __devinit m25p_probe(struct spi_device *spi)
 
 	if (flash->mtd.numeraseregions)
 		for (i = 0; i < flash->mtd.numeraseregions; i++)
-			DEBUG(MTD_DEBUG_LEVEL2,
+			printk(KERN_INFO
 				"mtd.eraseregions[%d] = { .offset = 0x%llx, "
 				".erasesize = 0x%.8x (%uKiB), "
 				".numblocks = %d }\n",

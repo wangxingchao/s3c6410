@@ -27,6 +27,7 @@ struct s3c64xx_spi_csinfo {
 	unsigned line;
 	void (*set_level)(unsigned line_id, int lvl);
 	void (*cfg_io)();
+	void (*cfg_fpga)(int val);
 };
 
 /**

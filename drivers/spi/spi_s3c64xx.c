@@ -311,7 +311,7 @@ static inline void enable_cs(struct s3c64xx_spi_driver_data *sdd,
 {
 	struct s3c64xx_spi_csinfo *cs;
 
-	printk(KERN_INFO "SPI: Enable CS, High First, Low Then\n");
+	//printk(KERN_INFO "SPI: Enable CS, High First, Low Then\n");
 	if (sdd->tgl_spi != NULL) { /* If last device toggled after mssg */
 		if (sdd->tgl_spi != spi) { /* if last mssg on diff device */
 			/* Deselect the last toggled device */
@@ -615,7 +615,12 @@ static void handle_msg(struct s3c64xx_spi_driver_data *sdd,
 	u32 speed;
 	u8 bpw;
 
-	printk(KERN_INFO "SPI: Handle message in SPI controller\n");
+	//printk(KERN_INFO "SPI: Handle message in SPI controller\n");
+	if (cs->cfg_fpga) {
+		//printk(KERN_INFO "SPI: Handle SPI Message, Disable FPGA FIRST\n");
+		cs->cfg_fpga(0);
+	}
+
 	/* If Master's(controller) state differs from that needed by Slave */
 	if (sdd->cur_speed != spi->max_speed_hz
 			|| sdd->cur_mode != spi->mode
@@ -741,6 +746,11 @@ out:
 
 	if (msg->complete)
 		msg->complete(msg->context);
+
+	if (cs->cfg_fpga) {
+		//printk(KERN_INFO "SPI: Handle SPI Message, Enable FPGA\n");
+		cs->cfg_fpga(1);
+	}
 }
 
 static int acquire_dma(struct s3c64xx_spi_driver_data *sdd)

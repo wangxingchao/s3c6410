@@ -194,7 +194,7 @@ static struct platform_device s3c_device_dm9000 = {
 /*add by fatfish for mcp251x*/
 static int request_cs_gpio;
 static void  cs_set_level(unsigned line_id, int lvl) {
- 	printk(KERN_INFO "SPI: cs set level\n");
+ 	//printk(KERN_INFO "SPI: cs set level\n");
     	gpio_direction_output(line_id, lvl);
 };
 
@@ -204,23 +204,59 @@ static struct s3c64xx_spi_csinfo s3c64xx_spi1_csinfo = {
   	.set_level=cs_set_level,
 };
 
+static void cfg_fpga_pro(int val)
+{
+    	gpio_direction_output(S3C64XX_GPP(12), val);
+}
+
 static void setup_pin_cs0(void)
 {
 	int ret;
+	//ret = gpio_request(S3C64XX_GPP(8), "CS0");
 	ret = gpio_request(S3C64XX_GPC(3), "CS0");
 	if (ret) {
 		printk(KERN_ERR "SPI: Setup CS-Pin0 Error\n");
 	}
 	printk(KERN_INFO "SPI: Set output pin 3 enabled\n");
+	//s3c_gpio_setpull(S3C64XX_GPP(8), S3C_GPIO_PULL_UP);	// Manual chip select pin as used in 6410_set_cs
 	s3c_gpio_setpull(S3C64XX_GPC(3), S3C_GPIO_PULL_NONE);	// Manual chip select pin as used in 6410_set_cs
 	s3c_gpio_cfgpin(S3C64XX_GPC(3), S3C_GPIO_OUTPUT);		// Manual chip select pin as used in 6410_set_cs
+	//s3c_gpio_cfgpin(S3C64XX_GPP(8), S3C_GPIO_OUTPUT);		// Manual chip select pin as used in 6410_set_cs
+};
+
+static void setup_spi_fpga(void)
+{
+	int ret;
+	printk(KERN_INFO "SPI: setup fpga initialization\n");
+#if 0
+	ret = gpio_request(S3C64XX_GPP(8), "FPGACS");
+	if (ret) {
+		printk(KERN_ERR "SPI: Setup FPGACS Error\n");
+	}
+	s3c_gpio_setpull(S3C64XX_GPP(8), S3C_GPIO_PULL_NONE);	// Manual chip select pin as used in 6410_set_cs
+	s3c_gpio_cfgpin(S3C64XX_GPP(8), S3C_GPIO_OUTPUT);		// Manual chip select pin as used in 6410_set_cs
+#endif
+	ret = gpio_request(S3C64XX_GPP(12), "FPGAPRO");
+	if (ret) {
+		printk(KERN_ERR "SPI: Setup FPGAPRO Error\n");
+	}
+	s3c_gpio_setpull(S3C64XX_GPP(12), S3C_GPIO_PULL_UP);	// Manual chip select pin as used in 6410_set_cs
+	s3c_gpio_cfgpin(S3C64XX_GPP(12), S3C_GPIO_OUTPUT);		// Manual chip select pin as used in 6410_set_cs
+
+    	gpio_direction_output(S3C64XX_GPP(12), 1);
+	mdelay(1);
+    	gpio_direction_output(S3C64XX_GPP(12), 0);
+	msleep(200);
+    	gpio_direction_output(S3C64XX_GPP(12), 1);
 };
 
 static struct s3c64xx_spi_csinfo s3c64xx_spi0_csinfo = {
   	.fb_delay=0x3,
-  	.line=S3C64XX_GPC(3),
+  	.line=S3C64XX_GPC(3), /*used for FPGA now*/
+  	//.line=S3C64XX_GPP(8),
   	.set_level=cs_set_level,
 	.cfg_io = setup_pin_cs0,
+	.cfg_fpga = cfg_fpga_pro,
 };
 
 static int mcp251x_ioSetup(struct spi_device *spi)
@@ -254,12 +290,50 @@ static struct spi_board_info __initdata forlinx6410_mc251x_info[]  = {
 	},
 };
 
+static struct mtd_partition m25p32_spiflash_part[] = {
+	[0] = {
+		.name = "Test",
+		.offset = 0,
+		.size		= (4 * SZ_1M),
+		.mask_flags	= MTD_CAP_NANDFLASH,
+	},
+#if 0
+	[1] = {
+		.name = "Test1",
+		.offset = SZ_64K,
+		.size = SZ_512K,
+		.mask_flags = MTD_WRITEABLE,
+	},
+	[2] = {
+		.name = "Test2",
+		.offset = (SZ_512K+SZ_64K),
+		.size = SZ_64K,
+		.mask_flags = MTD_WRITEABLE,
+	},
+	[3] = {
+		.name = "Free",
+		.offset = (SZ_512K+SZ_64K+SZ_64K),
+		.size = SZ_4M - (SZ_512K+SZ_128K),
+		.mask_flags = MTD_WRITEABLE,
+	},
+#endif
+};
+
 struct flash_platform_data m25p32_data = {
 	.name 		= "spi-flash",
 	.type 		= "m25p32",
-	.parts		= NULL,
-	.nr_parts	= 0,
+	.parts		= m25p32_spiflash_part,
+	.nr_parts	= ARRAY_SIZE(m25p32_spiflash_part),
 };
+
+#if 0
+static struct flash_platform_data da850evm_spiflash_data = {
+	.name		= "m25p80",
+	.parts		= da850evm_spiflash_part,
+	.nr_parts	= ARRAY_SIZE(da850evm_spiflash_part),
+	.type		= "m25p64",
+};
+#endif
 
 static struct spi_board_info __initdata spi_eeprom[] = {
 	{
@@ -1184,7 +1258,9 @@ static void __init smdk6410_machine_init(void)
 	spi_register_board_info(spi_eeprom,ARRAY_SIZE(spi_eeprom));
 	samsung_keypad_set_platdata(&smdk6410_keypad_data);
 	platform_add_devices(smdk6410_devices, ARRAY_SIZE(smdk6410_devices));
-	printk(KERN_INFO "Adding SPI infomation, Check SPI register v8\n");
+	printk(KERN_INFO "Adding SPI infomation, Check SPI register v10\n");
+	printk(KERN_INFO "SPI: FPGA initialize....\n");
+	setup_spi_fpga();
 }
 
 MACHINE_START(SMDK6410, "SMDK6410")
