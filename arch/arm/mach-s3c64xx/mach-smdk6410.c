@@ -258,6 +258,13 @@ static struct s3c64xx_spi_csinfo s3c64xx_spi0_csinfo = {
 	.cfg_io = setup_pin_cs0,
 	.cfg_fpga = cfg_fpga_pro,
 };
+static struct s3c64xx_spi_csinfo s3c64xx_spi0_fpga = {
+  	.fb_delay=0x3,
+  	.line=S3C64XX_GPC(3), /*used for FPGA now*/
+  	.set_level=cs_set_level,
+	//.cfg_io = setup_pin_cs0,
+	//.cfg_fpga = cfg_fpga_pro,
+};
 
 static int mcp251x_ioSetup(struct spi_device *spi)
 {
@@ -295,7 +302,8 @@ static struct mtd_partition m25p32_spiflash_part[] = {
 		.name = "Test",
 		.offset = 0,
 		.size		= (4 * SZ_1M),
-		.mask_flags	= MTD_CAP_NANDFLASH,
+		//.mask_flags	= MTD_CAP_NANDFLASH,
+		.mask_flags	= 0,
 	},
 #if 0
 	[1] = {
@@ -345,6 +353,15 @@ static struct spi_board_info __initdata spi_eeprom[] = {
 		.chip_select = 0,
 		.mode = SPI_MODE_3,	
 		.controller_data=&s3c64xx_spi0_csinfo,
+	},
+	{
+		.modalias = "spi-fpga",	
+		//.platform_data = &m25p32_data,
+		.max_speed_hz = 2*1000*1000,	
+		.bus_num = 0,
+		.chip_select = 0,
+		.mode = SPI_MODE_3,	
+		.controller_data=&s3c64xx_spi0_fpga,
 	},
 };
 
