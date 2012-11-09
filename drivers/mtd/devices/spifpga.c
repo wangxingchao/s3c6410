@@ -131,13 +131,14 @@ static struct attribute *fpga_sysfs_entries[] = {
 	&dev_attr_fpga_stress.attr,
 	&dev_attr_fpga_addr.attr,
 	&dev_attr_fpga_loop.attr,
+	NULL
 };
 static struct attribute_group fpga_attribute_group = {
 	.name = NULL,		/* put in device directory */
 	.attrs = fpga_sysfs_entries,
 };
 
-static int read_fpga(u16 addr, struct spi_dev *spi)
+static int read_fpga(u16 addr, struct spi_device *spi)
 {
 	u32 code;
 	u16 val;
@@ -149,7 +150,7 @@ static int read_fpga(u16 addr, struct spi_dev *spi)
 	return val;
 }
 
-static int write_fpga(u16 addr, u16 val, struct spi_dev *spi)
+static int write_fpga(u16 addr, u16 val, struct spi_device *spi)
 {
 	u32 code;
 	ssize_t retval;
