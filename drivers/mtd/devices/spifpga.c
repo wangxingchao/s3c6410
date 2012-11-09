@@ -26,6 +26,8 @@
 #include <linux/slab.h>
 #include <linux/sched.h>
 #include <linux/mod_devicetable.h>
+#include <linux/sysfs.h>
+#include <linux/device.h>
 
 #include <linux/mtd/cfi.h>
 #include <linux/mtd/mtd.h>
@@ -51,6 +53,90 @@
 #define CMD(l, h) (l&CMD_MASK | ((h&CMD_MASK)<<4))
 
 static struct spi_device *spi_fpga;
+static struct class *spifpga_class;
+static int spi_test_aa55(void);
+static int spi_u14_measure(void);
+static int spi_measure_data(u8 addr);
+int loop;
+
+static ssize_t show_aa55(struct device *d,
+		struct device_attribute *attr, char *buf)
+{
+	unsigned long ret_val;
+	int i;
+	for (i=0; i<loop; i++)
+		ret_val = spi_test_aa55();
+	return sprintf(buf, "0x%lX\n", ret_val);
+}
+static ssize_t show_temp(struct device *d,
+		struct device_attribute *attr, char *buf)
+{
+	unsigned long ret_val;
+	ret_val = spi_u14_measure();
+	return sprintf(buf, "0x%lX\n", ret_val);
+}
+static ssize_t show_stress(struct device *d,
+		struct device_attribute *attr, char *buf)
+{
+	unsigned long ret_val=0;
+	printk(KERN_INFO"Show Pressure value\n");
+	return sprintf(buf, "0x%lX\n", ret_val);
+}
+
+u8 fpga_address;
+static ssize_t show_address(struct device *d,
+		struct device_attribute *attr, char *buf)
+{
+	unsigned long ret_val=0;
+	ret_val = spi_measure_data(fpga_address);
+	printk(KERN_INFO "We are measuring %d addr value %d\n", fpga_address, ret_val);
+	return sprintf(buf, "0x%lX\n", ret_val);
+}
+static ssize_t store_addr(struct device *dev,
+			       struct device_attribute *attr,
+			       const char *buf,
+			       size_t count)
+{
+	unsigned long addr;
+	sscanf(buf, "%lX", &addr);
+	printk(KERN_INFO "Store %x As new Address\n", addr);
+	fpga_address = addr&0xFF;
+	return count;
+}
+static ssize_t show_loop(struct device *d,
+		struct device_attribute *attr, char *buf)
+{
+	unsigned long ret_val=0;
+	printk(KERN_INFO "Loop Value %d\n", loop);
+	return sprintf(buf, "0x%lX\n", ret_val);
+}
+
+static ssize_t store_loop(struct device *dev,
+			       struct device_attribute *attr,
+			       const char *buf,
+			       size_t count)
+{
+	sscanf(buf, "%lX", &loop);
+	printk(KERN_INFO "Store %x As new Loop value\n", loop);
+	return count;
+}
+static DEVICE_ATTR(fpga_test, S_IRUGO, show_aa55, NULL);
+static DEVICE_ATTR(fpga_temp, S_IRUGO, show_temp, NULL);
+static DEVICE_ATTR(fpga_stress, S_IRUGO, show_stress, NULL);
+static DEVICE_ATTR(fpga_addr, S_IRUGO | S_IWUGO, show_address, store_addr);
+static DEVICE_ATTR(fpga_loop, S_IRUGO | S_IWUGO, show_loop, store_loop);
+static struct attribute *fpga_sysfs_entries[] = {
+	&dev_attr_fpga_test.attr,
+	&dev_attr_fpga_temp.attr,
+	&dev_attr_fpga_stress.attr,
+	&dev_attr_fpga_addr.attr,
+	&dev_attr_fpga_loop.attr,
+};
+static struct attribute_group fpga_attribute_group = {
+	.name = NULL,		/* put in device directory */
+	.attrs = fpga_sysfs_entries,
+};
+
 static int read_fpga(u16 addr, struct spi_dev *spi)
 {
 	u32 code;
@@ -86,7 +172,7 @@ static int spi_measure_data(u8 addr)
 	return value;
 }
 
-static void spi_u14_measure(void)
+static int spi_u14_measure(void)
 {
 	u32 value;
 	u16 addr;
@@ -97,8 +183,9 @@ static void spi_u14_measure(void)
 	value = read_fpga(addr, spi_fpga);
 	value = value & DATA_MASK; 
 	printk(KERN_INFO "FPGA: read U14 measure data: 0x%x\n", value);
+	return value;
 }
-static void spi_test_aa55(void)
+static int spi_test_aa55(void)
 {
 	u32 value=0;
 	u16 addr;
@@ -109,6 +196,7 @@ static void spi_test_aa55(void)
 	value = read_fpga(addr, spi_fpga);
 	value = value & DATA_MASK; 
 	printk(KERN_INFO "FPGA: read aa55 value: 0x%x\n", value);
+	return value;
 }
 
 /*
@@ -136,9 +224,16 @@ static int __devinit fpga_probe(struct spi_device *spi)
 	s3c_gpio_cfgpin(S3C64XX_GPC(3), S3C_GPIO_OUTPUT);		// Manual chip select pin as used in 6410_set_cs
 #endif
 
+#if 0
 	for (i=0; i<100; i++)
 		spi_test_aa55();
 	spi_u14_measure();
+#endif
+	ret = sysfs_create_group(&spi->dev.kobj,
+			&fpga_attribute_group);
+	if (ret) {
+		printk(KERN_INFO "FPGA: failed to create sysfs device attributes.\n");
+	}
 	return 0;
 }
 
