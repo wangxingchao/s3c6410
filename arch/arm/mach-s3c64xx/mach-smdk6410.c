@@ -209,6 +209,18 @@ static void cfg_fpga_pro(int val)
     	gpio_direction_output(S3C64XX_GPP(12), val);
 }
 
+static void setup_pin_fpga(void)
+{
+	int ret;
+	/* Initialize SPI GPIO for FPGA */
+	ret = gpio_request(S3C64XX_GPP(8), "fpga");
+	if (ret) {
+		printk(KERN_ERR "SPI: Setup CS-Pin0 Error\n");
+	}
+	s3c_gpio_setpull(S3C64XX_GPP(8), S3C_GPIO_PULL_NONE);	// Manual chip select pin as used in 6410_set_cs
+	s3c_gpio_cfgpin(S3C64XX_GPP(8), S3C_GPIO_OUTPUT);		// Manual chip select pin as used in 6410_set_cs
+}
+
 static void setup_pin_cs0(void)
 {
 	int ret;
@@ -260,9 +272,9 @@ static struct s3c64xx_spi_csinfo s3c64xx_spi0_csinfo = {
 };
 static struct s3c64xx_spi_csinfo s3c64xx_spi0_fpga = {
   	.fb_delay=0x3,
-  	.line=S3C64XX_GPC(3), /*used for FPGA now*/
+  	.line=S3C64XX_GPP(8), /*used for FPGA now*/
   	.set_level=cs_set_level,
-	//.cfg_io = setup_pin_cs0,
+	.cfg_io = setup_pin_fpga,
 	//.cfg_fpga = cfg_fpga_pro,
 };
 
@@ -359,7 +371,7 @@ static struct spi_board_info __initdata spi_eeprom[] = {
 		//.platform_data = &m25p32_data,
 		.max_speed_hz = 2*1000*1000,	
 		.bus_num = 0,
-		.chip_select = 0,
+		.chip_select = 1,
 		.mode = SPI_MODE_3,	
 		.controller_data=&s3c64xx_spi0_fpga,
 	},
@@ -1268,8 +1280,8 @@ static void __init smdk6410_machine_init(void)
 	s3c_fimc1_set_platdata(NULL);
 #endif
 	
-	s3c64xx_spi_set_info(0,0,1);
-	s3c64xx_spi_set_info(1,0,1);
+	s3c64xx_spi_set_info(0,0,3);
+	s3c64xx_spi_set_info(1,0,2);
 	//printk(KERN_INFO "SPI: Only Register Bus number 1, spidev for test\n");
 	spi_register_board_info(forlinx6410_mc251x_info,ARRAY_SIZE(forlinx6410_mc251x_info));
 	spi_register_board_info(spi_eeprom,ARRAY_SIZE(spi_eeprom));
