@@ -64,7 +64,13 @@ static int spi_measure_data(u8 addr);
 int loop;
 static struct cdev spifpga_cdev;  /* use 1 cdev for all pins */
 struct timer_list fpga_timer;
+struct spifpga {
+	struct spi_device	*spi;
+	struct mutex		lock;
+	char			command[10];
+};
 
+struct spifpga *fpga_flash;
 static ssize_t show_aa55(struct device *d,
 		struct device_attribute *attr, char *buf)
 {
@@ -268,6 +274,7 @@ static int __devinit fpga_probe(struct spi_device *spi)
 
 	spi_fpga = spi;
 	printk(KERN_INFO "SPI: Probe SPI FPGA\n");
+	fpga_flash = kzalloc(sizeof *fpga_flash, GFP_KERNEL);
 
 	ret = alloc_chrdev_region(&devid, 0, 2, "spi-fpga");
 	if (ret < 0)
