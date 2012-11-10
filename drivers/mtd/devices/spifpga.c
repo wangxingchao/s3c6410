@@ -16,6 +16,8 @@
  */
 
 #include <linux/init.h>
+#include <linux/fs.h>
+#include <linux/cdev.h>
 #include <linux/err.h>
 #include <linux/errno.h>
 #include <linux/module.h>
@@ -32,6 +34,8 @@
 #include <linux/mtd/cfi.h>
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/partitions.h>
+#include <asm/uaccess.h>
+#include <linux/poll.h>		/* for POLLIN, etc. */
 
 #include <linux/spi/spi.h>
 #include <linux/spi/flash.h>
@@ -58,6 +62,8 @@ static int spi_test_aa55(void);
 static int spi_u14_measure(void);
 static int spi_measure_data(u8 addr);
 int loop;
+static struct cdev spifpga_cdev;  /* use 1 cdev for all pins */
+struct timer_list fpga_timer;
 
 static ssize_t show_aa55(struct device *d,
 		struct device_attribute *attr, char *buf)
@@ -200,6 +206,49 @@ static int spi_test_aa55(void)
 	return value;
 }
 
+static ssize_t
+spifpga_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
+{
+	return 0;
+}
+
+static int spifpga_open(struct inode *inode, struct file *file)
+{
+	return 0;
+}
+static long spifpga_ioctl(struct file *file,
+		unsigned int cmd, unsigned long arg)
+{
+	return 0;
+}
+static unsigned int spifpga_poll(struct file *file, poll_table *wait)
+{
+	return 0;
+}
+static ssize_t spifpga_write(struct file *file, const char __user *buf,
+			  size_t count, loff_t * ppos)
+{
+	return 0;
+}
+
+static int spifpga_release(struct inode *inode, struct file *file)
+{
+	return 0;
+}
+static const struct file_operations spifpga_fileops = {
+	.owner   = THIS_MODULE,
+	.write   = spifpga_write,
+	.read    = spifpga_read,
+	.open    = spifpga_open,
+	.poll	 = spifpga_poll,
+	.unlocked_ioctl	= spifpga_ioctl,
+	.release = spifpga_release,
+};
+
+static void spi_fpga_timer_func(unsigned long data)
+{
+	printk(KERN_INFO "Add Timer functioner\n");
+}
 /*
  * board specific setup should have ensured the SPI clock used here
  * matches what the READ command supports, at least until this driver
@@ -211,10 +260,19 @@ static int __devinit fpga_probe(struct spi_device *spi)
 	struct flash_info		*info;
 	unsigned			i;
 	int ret;
+	dev_t devid;
+	int major;
 
 	spi_fpga = spi;
 	printk(KERN_INFO "SPI: Probe SPI FPGA\n");
 
+	ret = alloc_chrdev_region(&devid, 0, 2, "spi-fpga");
+	if (ret < 0)
+		printk(KERN_ERR "%s: failed to allocate char dev region\n",
+			__FILE__);
+	major = MAJOR(devid);
+	cdev_init(&spifpga_cdev, &spifpga_fileops);
+	cdev_add(&spifpga_cdev, devid, 2);
 #if 0
 	/* Initialize SPI GPIO for FPGA */
 	ret = gpio_request(S3C64XX_GPC(3), "fpga");
@@ -235,6 +293,9 @@ static int __devinit fpga_probe(struct spi_device *spi)
 	if (ret) {
 		printk(KERN_INFO "FPGA: failed to create sysfs device attributes.\n");
 	}
+
+	/* Add Timer */
+	setup_timer(&fpga_timer, spi_fpga_timer_func, spi);
 	return 0;
 }
 
