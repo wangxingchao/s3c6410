@@ -321,6 +321,7 @@ static int __devinit fpga_probe(struct spi_device *spi)
 	int major;
 
 	spi_fpga = spi;
+	spi->bits_per_word = 16;
 	printk(KERN_INFO "SPI: Probe SPI FPGA\n");
 	fpga_flash = kzalloc(sizeof *fpga_flash, GFP_KERNEL);
 
