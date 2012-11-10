@@ -68,6 +68,7 @@ struct spifpga {
 	struct spi_device	*spi;
 	struct mutex		lock;
 	char			command[10];
+	char			buffer[10];
 };
 
 struct spifpga *fpga_flash;
@@ -153,26 +154,34 @@ static struct attribute_group fpga_attribute_group = {
 /* Read: 0 << 16*/
 static int read_fpga(u16 addr, struct spi_device *spi)
 {
-	u16 code;
+	u8 code;
 	u16 val;
 	ssize_t retval;
+	u8* cmd = fpga_flash->command;
+	u8* buf = fpga_flash->buffer;
 
 	//code = (addr | (1<<16)) << 16; 
 	code = (addr | (0<<16)); 
+	cmd[0] = (0<<7) | 0;   
+	cmd[1] = addr & 0xFF;
 	//spi_write(spi, &code, 1);
-	retval = spi_write_then_read(spi, (const u8 *)&code, sizeof(code), &val, sizeof(val));
+	retval = spi_write_then_read(spi, cmd, 2, buf, 2);
 	return val;
 }
 
 /* Write: 1 << 16*/
 static int write_fpga(u16 addr, u16 val, struct spi_device *spi)
 {
-	u32 code;
+	u8 code;
 	ssize_t retval;
+	u8* cmd = fpga_flash->command;
 
-	code = (addr | (1<<16)) << 16; 
-	code |= val;
-	spi_write(spi, &code, sizeof(code));
+	code = 1<<7; 
+	cmd[0] = code;   
+	cmd[1] = addr & 0xFF;
+	cmd[2] = (val>>8) & 0xFF;
+	cmd[3] = val & 0xFF;
+	spi_write(spi, cmd, 4);
 	return 0;
 }
 
