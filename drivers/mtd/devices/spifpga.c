@@ -157,17 +157,20 @@ static int read_fpga(u16 addr, struct spi_device *spi)
 	u8 code;
 	u16 val;
 	ssize_t retval;
-	u8* cmd = fpga_flash->command;
-	u8* buf = fpga_flash->buffer;
+	//u8* cmd = fpga_flash->command;
+	//u8* buf = fpga_flash->buffer;
+	u8	cmd[2];
+	u8 	buf[2];
 
 	//code = (addr | (1<<16)) << 16; 
-	code = (addr | (0<<16)); 
 	cmd[0] = (0<<7) | 0;   
 	cmd[1] = addr & 0xFF;
-#if 0
+#if 1 
 	/* we use old way to read data*/
-	//retval = spi_write_then_read(spi, cmd, 2, buf, 2);
+	printk(KERN_INFO "send cmd %d %d first\n", cmd[0], cmd[1]);
+	retval = spi_write_then_read(spi, &cmd[0], 1, &buf[0], 2);
 #endif
+#if 0
 	retval =  spi_write(spi, cmd, 2);
 	if (retval < 0)
 		printk(KERN_INFO "SPI write error\n");
@@ -175,6 +178,7 @@ static int read_fpga(u16 addr, struct spi_device *spi)
 	retval = spi_read(spi, buf, 2);
 	if (retval < 0)
 		printk(KERN_INFO "SPI read error\n");
+#endif
 	val = buf[0] << 8 | buf[1];
 	return val;
 }
