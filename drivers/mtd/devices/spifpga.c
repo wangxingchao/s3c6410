@@ -144,18 +144,21 @@ static struct attribute_group fpga_attribute_group = {
 	.attrs = fpga_sysfs_entries,
 };
 
+/* Read: 0 << 16*/
 static int read_fpga(u16 addr, struct spi_device *spi)
 {
-	u32 code;
+	u16 code;
 	u16 val;
 	ssize_t retval;
 
-	code = (addr | (1<<16)) << 16; 
+	//code = (addr | (1<<16)) << 16; 
+	code = (addr | (0<<16)); 
 	//spi_write(spi, &code, 1);
-	retval = spi_write_then_read(spi, &code, 1, &val, 1);
+	retval = spi_write_then_read(spi, (const u8 *)&code, sizeof(code), &val, sizeof(val));
 	return val;
 }
 
+/* Write: 1 << 16*/
 static int write_fpga(u16 addr, u16 val, struct spi_device *spi)
 {
 	u32 code;
@@ -163,7 +166,7 @@ static int write_fpga(u16 addr, u16 val, struct spi_device *spi)
 
 	code = (addr | (1<<16)) << 16; 
 	code |= val;
-	spi_write(spi, &code, 1);
+	spi_write(spi, &code, sizeof(code));
 	return 0;
 }
 
