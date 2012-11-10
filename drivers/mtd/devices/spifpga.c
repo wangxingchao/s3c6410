@@ -164,8 +164,18 @@ static int read_fpga(u16 addr, struct spi_device *spi)
 	code = (addr | (0<<16)); 
 	cmd[0] = (0<<7) | 0;   
 	cmd[1] = addr & 0xFF;
-	//spi_write(spi, &code, 1);
-	retval = spi_write_then_read(spi, cmd, 2, buf, 2);
+#if 0
+	/* we use old way to read data*/
+	//retval = spi_write_then_read(spi, cmd, 2, buf, 2);
+#endif
+	retval =  spi_write(spi, cmd, 2);
+	if (retval < 0)
+		printk(KERN_INFO "SPI write error\n");
+
+	retval = spi_read(spi, buf, 2);
+	if (retval < 0)
+		printk(KERN_INFO "SPI read error\n");
+	val = buf[0] << 8 | buf[1];
 	return val;
 }
 
@@ -212,14 +222,13 @@ static int spi_u14_measure(void)
 }
 static int spi_test_aa55(void)
 {
-	u32 value=0;
+	u16 value=0;
 	u16 addr;
 	int retval;
 
 	addr = 0;
 	//retval = spi_write_then_read(spi_fpga, &code, 1, &val, 1);
 	value = read_fpga(addr, spi_fpga);
-	value = value & DATA_MASK; 
 	printk(KERN_INFO "FPGA: read aa55 value: 0x%x\n", value);
 	return value;
 }
