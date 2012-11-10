@@ -61,7 +61,9 @@ static struct class *spifpga_class;
 static int spi_test_aa55(void);
 static int spi_u14_measure(void);
 static int spi_measure_data(u8 addr);
+static int write_fpga(u16 addr, u16 val, struct spi_device *spi);
 int loop;
+int write_value;
 static struct cdev spifpga_cdev;  /* use 1 cdev for all pins */
 struct timer_list fpga_timer;
 struct spifpga {
@@ -133,17 +135,38 @@ static ssize_t store_loop(struct device *dev,
 	printk(KERN_INFO "Store %x As new Loop value\n", loop);
 	return count;
 }
+static ssize_t store_write(struct device *dev,
+			       struct device_attribute *attr,
+			       const char *buf,
+			       size_t count)
+{
+	sscanf(buf, "%lX", &write_value);
+	printk(KERN_INFO "Store %x As new write_value value\n", write_value);
+	return count;
+}
+
+static ssize_t show_write(struct device *d,
+		struct device_attribute *attr, char *buf)
+{
+	unsigned long ret_val=0;
+	printk(KERN_INFO "write_value Value %d\n", write_value);
+	printk(KERN_INFO "Will Write %d to address %d\n", write_value, fpga_address);
+	write_fpga(fpga_address, write_value, spi_fpga);
+	return sprintf(buf, "0x%lX\n", ret_val);
+}
 static DEVICE_ATTR(fpga_test, S_IRUGO, show_aa55, NULL);
 static DEVICE_ATTR(fpga_temp, S_IRUGO, show_temp, NULL);
 static DEVICE_ATTR(fpga_stress, S_IRUGO, show_stress, NULL);
 static DEVICE_ATTR(fpga_addr, S_IRUGO | S_IWUGO, show_address, store_addr);
 static DEVICE_ATTR(fpga_loop, S_IRUGO | S_IWUGO, show_loop, store_loop);
+static DEVICE_ATTR(fpga_write_value, S_IRUGO | S_IWUGO, show_write, store_write);
 static struct attribute *fpga_sysfs_entries[] = {
 	&dev_attr_fpga_test.attr,
 	&dev_attr_fpga_temp.attr,
 	&dev_attr_fpga_stress.attr,
 	&dev_attr_fpga_addr.attr,
 	&dev_attr_fpga_loop.attr,
+	&dev_attr_fpga_write_value.attr,
 	NULL
 };
 static struct attribute_group fpga_attribute_group = {
@@ -155,7 +178,7 @@ static struct attribute_group fpga_attribute_group = {
 static int read_fpga(u16 addr, struct spi_device *spi)
 {
 	u8 code;
-	u16 val;
+	u16 val=0;
 	ssize_t retval;
 	//u8* cmd = fpga_flash->command;
 	//u8* buf = fpga_flash->buffer;
@@ -165,17 +188,20 @@ static int read_fpga(u16 addr, struct spi_device *spi)
 	//code = (addr | (1<<16)) << 16; 
 	cmd[0] = (0<<7) | 0;   
 	cmd[1] = addr & 0xFF;
-#if 1 
+#if 0 
 	/* we use old way to read data*/
 	printk(KERN_INFO "send cmd %d %d first\n", cmd[0], cmd[1]);
 	retval = spi_write_then_read(spi, &cmd[0], 1, &buf[0], 2);
 #endif
-#if 0
-	retval =  spi_write(spi, cmd, 2);
+#if 1 
+	retval =  spi_write(spi, &cmd[0], 2);
 	if (retval < 0)
 		printk(KERN_INFO "SPI write error\n");
+#if 0
+	retval =  spi_write(spi, &cmd[1], 1);
 
-	retval = spi_read(spi, buf, 2);
+#endif
+	retval = spi_read(spi, &buf[0], 2);
 	if (retval < 0)
 		printk(KERN_INFO "SPI read error\n");
 #endif
