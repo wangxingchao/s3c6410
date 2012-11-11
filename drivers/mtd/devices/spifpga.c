@@ -93,12 +93,12 @@ static ssize_t show_write_test(struct device *d,
 	int value = 0;
 	u16 tmp[3] = {0x1234, 0x5678, 0xaa55};
 	for (i=0; i<loop; i++) {
-		write_fpga(fpga_address, tmp[loop%3], spi_fpga);
+		write_fpga(fpga_address, tmp[i%3], spi_fpga);
 	}
 	printk(KERN_INFO "SPI: Finish write test, read back test\n");
 	for (i=0; i<loop; i++) {
 		value = read_fpga(fpga_address, spi_fpga);
-		printk(KERN_INFO "FPGA: read %d value: 0x%x\n", fpga_address, value);
+		printk(KERN_INFO "FPGA: read Addr:%d value: 0x%x\n", fpga_address, value);
 	}
 	return sprintf(buf, "0x%lX\n", value);
 }
@@ -153,24 +153,24 @@ static ssize_t store_loop(struct device *dev,
 	printk(KERN_INFO "Store %x As new Loop value\n", loop);
 	return count;
 }
-static ssize_t store_write(struct device *dev,
+static ssize_t store_write_value(struct device *dev,
 			       struct device_attribute *attr,
 			       const char *buf,
 			       size_t count)
 {
 	sscanf(buf, "%lX", &write_value);
 	printk(KERN_INFO "Store %x As new write_value value\n", write_value);
+	printk(KERN_INFO "Will Write 0x%x to address 0x%x\n", write_value, fpga_address);
+	write_fpga(fpga_address, write_value, spi_fpga);
 	return count;
 }
 
-static ssize_t show_write(struct device *d,
+static ssize_t show_write_value(struct device *d,
 		struct device_attribute *attr, char *buf)
 {
 	unsigned long ret_val=0;
-	printk(KERN_INFO "write_value Value %d\n", write_value);
-	printk(KERN_INFO "Will Write 0x%x to address 0x%x\n", write_value, fpga_address);
-	write_fpga(fpga_address, write_value, spi_fpga);
-	return sprintf(buf, "0x%lX\n", ret_val);
+	printk(KERN_INFO "write_value= %d\n", write_value);
+	return sprintf(buf, "0x%lX\n", write_value);
 }
 static DEVICE_ATTR(fpga_read_test, S_IRUGO, show_aa55, NULL);
 static DEVICE_ATTR(fpga_write_test, S_IRUGO, show_write_test, NULL);
@@ -178,7 +178,7 @@ static DEVICE_ATTR(fpga_temp, S_IRUGO, show_temp, NULL);
 static DEVICE_ATTR(fpga_stress, S_IRUGO, show_stress, NULL);
 static DEVICE_ATTR(fpga_addr, S_IRUGO | S_IWUGO, show_address, store_addr);
 static DEVICE_ATTR(fpga_loop, S_IRUGO | S_IWUGO, show_loop, store_loop);
-static DEVICE_ATTR(fpga_write_value, S_IRUGO | S_IWUGO, show_write, store_write);
+static DEVICE_ATTR(fpga_write_value, S_IRUGO | S_IWUGO, show_write_value, store_write_value);
 static struct attribute *fpga_sysfs_entries[] = {
 	&dev_attr_fpga_read_test.attr,
 	&dev_attr_fpga_write_test.attr,
@@ -206,8 +206,8 @@ static int read_fpga(u16 addr, struct spi_device *spi)
 	u8 	buf[2];
 
 	//code = (addr | (1<<16)) << 16; 
-	cmd[0] = (0<<7) | 0;   
-	cmd[1] = addr & 0xFF;
+	cmd[1] = (0<<7) | 0;   
+	cmd[0] = addr & 0xFF;
 #if 0 
 	/* we use old way to read data*/
 	printk(KERN_INFO "send cmd %d %d first\n", cmd[0], cmd[1]);
@@ -395,10 +395,6 @@ static struct spi_driver fpga_driver = {
 	.probe	= fpga_probe,
 	.remove	= __devexit_p(fpga_remove),
 
-	/* REVISIT: many of these chips have deep power-down modes, which
-	 * should clearly be entered on suspend() to minimize power use.
-	 * And also when they're otherwise idle...
-	 */
 };
 
 
