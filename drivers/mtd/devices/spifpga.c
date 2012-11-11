@@ -62,10 +62,12 @@ static int spi_test_aa55(void);
 static int spi_u14_measure(void);
 static int spi_measure_data(u8 addr);
 static int write_fpga(u16 addr, u16 val, struct spi_device *spi);
-int loop;
+static int read_fpga(u16 addr, struct spi_device *spi);
+int loop = 1;
 int write_value;
 static struct cdev spifpga_cdev;  /* use 1 cdev for all pins */
 struct timer_list fpga_timer;
+u8 fpga_address = 0x4;
 struct spifpga {
 	struct spi_device	*spi;
 	struct mutex		lock;
@@ -83,6 +85,23 @@ static ssize_t show_aa55(struct device *d,
 		ret_val = spi_test_aa55();
 	return sprintf(buf, "0x%lX\n", ret_val);
 }
+static ssize_t show_write_test(struct device *d,
+		struct device_attribute *attr, char *buf)
+{
+	unsigned long ret_val;
+	int i;
+	int value = 0;
+	u16 tmp[3] = {0x1234, 0x5678, 0xaa55};
+	for (i=0; i<loop; i++) {
+		write_fpga(fpga_address, tmp[loop%3], spi_fpga);
+	}
+	printk(KERN_INFO "SPI: Finish write test, read back test\n");
+	for (i=0; i<loop; i++) {
+		value = read_fpga(fpga_address, spi_fpga);
+		printk(KERN_INFO "FPGA: read %d value: 0x%x\n", fpga_address, value);
+	}
+	return sprintf(buf, "0x%lX\n", value);
+}
 static ssize_t show_temp(struct device *d,
 		struct device_attribute *attr, char *buf)
 {
@@ -98,7 +117,6 @@ static ssize_t show_stress(struct device *d,
 	return sprintf(buf, "0x%lX\n", ret_val);
 }
 
-u8 fpga_address;
 static ssize_t show_address(struct device *d,
 		struct device_attribute *attr, char *buf)
 {
@@ -150,18 +168,20 @@ static ssize_t show_write(struct device *d,
 {
 	unsigned long ret_val=0;
 	printk(KERN_INFO "write_value Value %d\n", write_value);
-	printk(KERN_INFO "Will Write %d to address %d\n", write_value, fpga_address);
+	printk(KERN_INFO "Will Write 0x%x to address 0x%x\n", write_value, fpga_address);
 	write_fpga(fpga_address, write_value, spi_fpga);
 	return sprintf(buf, "0x%lX\n", ret_val);
 }
-static DEVICE_ATTR(fpga_test, S_IRUGO, show_aa55, NULL);
+static DEVICE_ATTR(fpga_read_test, S_IRUGO, show_aa55, NULL);
+static DEVICE_ATTR(fpga_write_test, S_IRUGO, show_write_test, NULL);
 static DEVICE_ATTR(fpga_temp, S_IRUGO, show_temp, NULL);
 static DEVICE_ATTR(fpga_stress, S_IRUGO, show_stress, NULL);
 static DEVICE_ATTR(fpga_addr, S_IRUGO | S_IWUGO, show_address, store_addr);
 static DEVICE_ATTR(fpga_loop, S_IRUGO | S_IWUGO, show_loop, store_loop);
 static DEVICE_ATTR(fpga_write_value, S_IRUGO | S_IWUGO, show_write, store_write);
 static struct attribute *fpga_sysfs_entries[] = {
-	&dev_attr_fpga_test.attr,
+	&dev_attr_fpga_read_test.attr,
+	&dev_attr_fpga_write_test.attr,
 	&dev_attr_fpga_temp.attr,
 	&dev_attr_fpga_stress.attr,
 	&dev_attr_fpga_addr.attr,
@@ -205,7 +225,7 @@ static int read_fpga(u16 addr, struct spi_device *spi)
 	if (retval < 0)
 		printk(KERN_INFO "SPI read error\n");
 #endif
-	val = buf[0] << 8 | buf[1];
+	val = buf[0] | buf[1] << 8;
 	return val;
 }
 
@@ -217,10 +237,11 @@ static int write_fpga(u16 addr, u16 val, struct spi_device *spi)
 	u8* cmd = fpga_flash->command;
 
 	code = 1<<7; 
-	cmd[0] = code;   
-	cmd[1] = addr & 0xFF;
-	cmd[2] = (val>>8) & 0xFF;
-	cmd[3] = val & 0xFF;
+	cmd[1] = code;   
+	cmd[0] = addr & 0xFF;
+	cmd[3] = (val>>8) & 0xFF;
+	cmd[2] = val & 0xFF;
+	printk(KERN_INFO "SPI: write 0x%x to Addr 0x%d\n", val, addr);
 	spi_write(spi, cmd, 4);
 	return 0;
 }
