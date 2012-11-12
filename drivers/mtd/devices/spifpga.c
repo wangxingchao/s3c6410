@@ -68,6 +68,7 @@ int write_value;
 static struct cdev spifpga_cdev;  /* use 1 cdev for all pins */
 struct timer_list fpga_timer;
 u8 fpga_address = 0x4;
+int buffer[32];
 struct spifpga {
 	struct spi_device	*spi;
 	struct mutex		lock;
@@ -297,7 +298,10 @@ static int spi_test_aa55(void)
 static ssize_t
 spifpga_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
 {
-	return 0;
+	int ret;
+	ret = copy_to_user(buf, buffer, 1) ? -EFAULT : ret;
+	// we only return one 32bit data now
+	return ret;
 }
 
 static int spifpga_open(struct inode *inode, struct file *file)
@@ -326,15 +330,19 @@ static long spifpga_ioctl(struct file *file,
 			ret_val = spi_measure_data(0x3);
 			break;
 	}
+	buffer[0] = ret_val;
+	//modify buffer size
 	return 0;
 }
 static unsigned int spifpga_poll(struct file *file, poll_table *wait)
 {
+	printk(KERN_INFO "Donot support poll callback yet\n");
 	return 0;
 }
 static ssize_t spifpga_write(struct file *file, const char __user *buf,
 			  size_t count, loff_t * ppos)
 {
+	printk(KERN_INFO "Donot support write callback yet\n");
 	return 0;
 }
 
