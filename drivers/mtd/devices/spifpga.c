@@ -102,18 +102,26 @@ static ssize_t show_write_test(struct device *d,
 	}
 	return sprintf(buf, "0x%lX\n", value);
 }
-static ssize_t show_temp(struct device *d,
+static ssize_t show_u14(struct device *d,
 		struct device_attribute *attr, char *buf)
 {
 	unsigned long ret_val;
 	ret_val = spi_u14_measure();
 	return sprintf(buf, "0x%lX\n", ret_val);
 }
+static ssize_t show_temp(struct device *d,
+		struct device_attribute *attr, char *buf)
+{
+	unsigned long ret_val;
+	ret_val = spi_measure_data(0x2);
+	return sprintf(buf, "0x%lX\n", ret_val);
+}
 static ssize_t show_stress(struct device *d,
 		struct device_attribute *attr, char *buf)
 {
 	unsigned long ret_val=0;
-	printk(KERN_INFO"Show Pressure value\n");
+	ret_val = spi_measure_data(0x3);
+	printk(KERN_INFO"Show Pressure value: %d\n", ret_val);
 	return sprintf(buf, "0x%lX\n", ret_val);
 }
 
@@ -175,6 +183,7 @@ static ssize_t show_write_value(struct device *d,
 static DEVICE_ATTR(fpga_read_test, S_IRUGO, show_aa55, NULL);
 static DEVICE_ATTR(fpga_write_test, S_IRUGO, show_write_test, NULL);
 static DEVICE_ATTR(fpga_temp, S_IRUGO, show_temp, NULL);
+static DEVICE_ATTR(fpga_u14, S_IRUGO, show_u14, NULL);
 static DEVICE_ATTR(fpga_stress, S_IRUGO, show_stress, NULL);
 static DEVICE_ATTR(fpga_addr, S_IRUGO | S_IWUGO, show_address, store_addr);
 static DEVICE_ATTR(fpga_loop, S_IRUGO | S_IWUGO, show_loop, store_loop);
@@ -183,6 +192,7 @@ static struct attribute *fpga_sysfs_entries[] = {
 	&dev_attr_fpga_read_test.attr,
 	&dev_attr_fpga_write_test.attr,
 	&dev_attr_fpga_temp.attr,
+	&dev_attr_fpga_u14.attr,
 	&dev_attr_fpga_stress.attr,
 	&dev_attr_fpga_addr.attr,
 	&dev_attr_fpga_loop.attr,
@@ -292,11 +302,30 @@ spifpga_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
 
 static int spifpga_open(struct inode *inode, struct file *file)
 {
+	printk(KERN_INFO "SPI FPGA open operation\n");
 	return 0;
 }
+#define SPIFPGA_READ_TEMP	0x1
+#define SPIFPGA_READ_PRESSURE	0x2
+#define SPIFPGA_READ_TEST	0x0
+
 static long spifpga_ioctl(struct file *file,
 		unsigned int cmd, unsigned long arg)
 {
+	int i;
+	int ret_val;
+	switch(cmd) {
+		case SPIFPGA_READ_TEST:
+			for (i=0; i<loop; i++)
+				ret_val = spi_test_aa55();
+			break;
+		case	SPIFPGA_READ_TEMP:
+			ret_val = spi_measure_data(0x2);
+			break;
+		case	SPIFPGA_READ_PRESSURE:
+			ret_val = spi_measure_data(0x3);
+			break;
+	}
 	return 0;
 }
 static unsigned int spifpga_poll(struct file *file, poll_table *wait)
