@@ -205,7 +205,7 @@ static struct attribute_group fpga_attribute_group = {
 	.attrs = fpga_sysfs_entries,
 };
 
-/* Read: 0 << 16*/
+/* Read: 0 << 16, First lower byte, then higher byte*/
 static int read_fpga(u16 addr, struct spi_device *spi)
 {
 	u8 code;
@@ -319,7 +319,7 @@ static long spifpga_ioctl(struct file *file,
 	int i;
 	int ret_val;
 	switch(cmd) {
-		case SPIFPGA_READ_TEST:
+		case 	SPIFPGA_READ_TEST:
 			for (i=0; i<loop; i++)
 				ret_val = spi_test_aa55();
 			break;
