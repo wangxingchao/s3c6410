@@ -96,12 +96,18 @@ static ssize_t show_write_test(struct device *d,
 	u16 tmp[3] = {0x1234, 0x5678, 0xaa55};
 	for (i=0; i<loop; i++) {
 		write_fpga(fpga_address, tmp[i%3], spi_fpga);
+		printk(KERN_INFO "SPI: Finish write test, read back test\n");
+		msleep(100);
+		value = read_fpga(fpga_address, spi_fpga);
+		printk(KERN_INFO "FPGA: read Addr:%d value: 0x%x\n", fpga_address, value);
 	}
+#if 0
 	printk(KERN_INFO "SPI: Finish write test, read back test\n");
 	for (i=0; i<loop; i++) {
 		value = read_fpga(fpga_address, spi_fpga);
 		printk(KERN_INFO "FPGA: read Addr:%d value: 0x%x\n", fpga_address, value);
 	}
+#endif
 	return sprintf(buf, "0x%lX\n", value);
 }
 static ssize_t show_u14(struct device *d,
@@ -330,6 +336,9 @@ static long spifpga_ioctl(struct file *file,
 		case	SPIFPGA_READ_PRESSURE:
 			ret_val = spi_measure_data(0x3);
 			break;
+		default:
+			printk(KERN_INFO "Not Supported Command\n");
+			break;
 	}
 	buffer[0] = ret_val;
 	//modify buffer size
@@ -357,7 +366,7 @@ static const struct file_operations spifpga_fileops = {
 	.read    = spifpga_read,
 	.open    = spifpga_open,
 	.poll	 = spifpga_poll,
-	.unlocked_ioctl	= spifpga_ioctl,
+	.ioctl	= spifpga_ioctl,
 	.release = spifpga_release,
 };
 
