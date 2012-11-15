@@ -27,6 +27,7 @@
 #include <linux/math64.h>
 #include <linux/slab.h>
 #include <linux/sched.h>
+#include <linux/miscdevice.h>
 #include <linux/mod_devicetable.h>
 #include <linux/sysfs.h>
 #include <linux/device.h>
@@ -299,7 +300,7 @@ static ssize_t
 spifpga_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
 {
 	int ret;
-	ret = copy_to_user(buf, buffer, 1) ? -EFAULT : ret;
+	ret = copy_to_user(buf, buffer, count) ? -EFAULT : ret;
 	// we only return one 32bit data now
 	return ret;
 }
@@ -364,6 +365,11 @@ static void spi_fpga_timer_func(unsigned long data)
 {
 	printk(KERN_INFO "Add Timer functioner\n");
 }
+static struct miscdevice s3c_fpga_miscdev = {
+	minor:		250,
+	name:		"s3c-fpga",
+	fops:		&spifpga_fileops
+};
 /*
  * board specific setup should have ensured the SPI clock used here
  * matches what the READ command supports, at least until this driver
@@ -383,6 +389,7 @@ static int __devinit fpga_probe(struct spi_device *spi)
 	printk(KERN_INFO "SPI: Probe SPI FPGA\n");
 	fpga_flash = kzalloc(sizeof *fpga_flash, GFP_KERNEL);
 
+#if 0
 	ret = alloc_chrdev_region(&devid, 0, 2, "spi-fpga");
 	if (ret < 0)
 		printk(KERN_ERR "%s: failed to allocate char dev region\n",
@@ -390,6 +397,8 @@ static int __devinit fpga_probe(struct spi_device *spi)
 	major = MAJOR(devid);
 	cdev_init(&spifpga_cdev, &spifpga_fileops);
 	cdev_add(&spifpga_cdev, devid, 2);
+#endif
+	ret = misc_register(&s3c_fpga_miscdev);
 #if 0
 	/* Initialize SPI GPIO for FPGA */
 	ret = gpio_request(S3C64XX_GPC(3), "fpga");
