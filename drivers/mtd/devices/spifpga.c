@@ -55,6 +55,15 @@
 
 #define CMD(l, h) (l&CMD_MASK | ((h&CMD_MASK)<<4))
 
+/*Debug level: level 0 --> silent level 1 --> less log... level 5: blood log */
+static int fpga_debug_level = 2;
+module_param_named(level, fpga_debug_level, int, 0);
+MODULE_PARM_DESC(level, "set fpga debug level");
+
+#define fpga_db(format, args...) \
+	if (fpga_debug_level > 2) \
+		printk(format,  ##args)
+
 static struct spi_device *spi_fpga;
 static struct class *spifpga_class;
 static int spi_test_aa55(void);
