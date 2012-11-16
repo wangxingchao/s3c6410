@@ -325,6 +325,7 @@ static long spifpga_ioctl(struct file *file,
 {
 	int i;
 	int ret_val;
+	void __user *argp = (void __user *)arg;
 	switch(cmd) {
 		case 	SPIFPGA_READ_TEST:
 			for (i=0; i<loop; i++)
@@ -342,7 +343,8 @@ static long spifpga_ioctl(struct file *file,
 	}
 	buffer[0] = ret_val;
 	//modify buffer size
-	return 0;
+	retval = copy_to_user(argp, buffer, sizeof(buffer) ? -EFAULT : 0;
+	return retval;
 }
 static unsigned int spifpga_poll(struct file *file, poll_table *wait)
 {
@@ -366,7 +368,7 @@ static const struct file_operations spifpga_fileops = {
 	.read    = spifpga_read,
 	.open    = spifpga_open,
 	.poll	 = spifpga_poll,
-	.ioctl	= spifpga_ioctl,
+	.compat_ioctl	= spifpga_ioctl,
 	.release = spifpga_release,
 };
 
