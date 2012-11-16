@@ -232,13 +232,13 @@ static int read_fpga(u16 addr, struct spi_device *spi)
 	cmd[1] = (0<<7) | 0;   
 	cmd[0] = addr & 0xFF;
 
-	retval =  spi_write(spi, &cmd[0], 2);
+	retval =  spi_write(spi, cmd, 2);
 	if (retval < 0) {
 		printk(KERN_INFO "SPI write error\n");
 		goto out;
 	}
 
-	retval = spi_read(spi, &buf[0], 2);
+	retval = spi_read(spi, buf, 2);
 	if (retval < 0) {
 		printk(KERN_INFO "SPI read error\n");
 		goto out;
