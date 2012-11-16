@@ -74,8 +74,8 @@ int buffer[32];
 struct spifpga {
 	struct spi_device	*spi;
 	struct mutex		lock;
-	char			command[10];
-	char			buffer[10];
+	u8			command[10];
+	u8			buffer[10];
 };
 
 struct fpga_data {
@@ -253,18 +253,19 @@ out:
 /* Write: 1 << 16*/
 static int write_fpga(u16 addr, u16 val, struct spi_device *spi)
 {
-	u8 code;
 	ssize_t retval;
 	u8* cmd = fpga_flash->command;
 
-	code = 1<<7; 
-	cmd[1] = code;   
+	cmd[1] = 1 << 7;   
 	cmd[0] = addr & 0xFF;
-	cmd[3] = (val>>8) & 0xFF;
+	cmd[3] = (val >> 8) & 0xFF;
 	cmd[2] = val & 0xFF;
 	printk(KERN_INFO "SPI: write 0x%x to Addr 0x%d\n", val, addr);
-	spi_write(spi, cmd, 4);
-	return 0;
+	retval = spi_write(spi, cmd, 4);
+	if (retval < 0) {
+		printk(KERN_INFO "SPI write error\n");
+	}
+	return retval;
 }
 
 static int spi_measure_data(u8 addr)
