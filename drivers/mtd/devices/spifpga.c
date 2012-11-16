@@ -70,11 +70,19 @@ static struct cdev spifpga_cdev;  /* use 1 cdev for all pins */
 struct timer_list fpga_timer;
 u8 fpga_address = 0x4;
 int buffer[32];
+
 struct spifpga {
 	struct spi_device	*spi;
 	struct mutex		lock;
 	char			command[10];
 	char			buffer[10];
+};
+
+struct fpga_data {
+	u32 temp;
+	u32 pressure;
+	u32 u14;
+	u32 timestamp;
 };
 
 struct spifpga *fpga_flash;
@@ -215,36 +223,31 @@ static struct attribute_group fpga_attribute_group = {
 /* Read: 0 << 16, First lower byte, then higher byte*/
 static int read_fpga(u16 addr, struct spi_device *spi)
 {
-	u8 code;
 	u16 val=0;
 	ssize_t retval;
-	//u8* cmd = fpga_flash->command;
-	//u8* buf = fpga_flash->buffer;
+
 	u8	cmd[2];
 	u8 	buf[2];
 
-	//code = (addr | (1<<16)) << 16; 
 	cmd[1] = (0<<7) | 0;   
 	cmd[0] = addr & 0xFF;
-#if 0 
-	/* we use old way to read data*/
-	printk(KERN_INFO "send cmd %d %d first\n", cmd[0], cmd[1]);
-	retval = spi_write_then_read(spi, &cmd[0], 1, &buf[0], 2);
-#endif
-#if 1 
-	retval =  spi_write(spi, &cmd[0], 2);
-	if (retval < 0)
-		printk(KERN_INFO "SPI write error\n");
-#if 0
-	retval =  spi_write(spi, &cmd[1], 1);
 
-#endif
+	retval =  spi_write(spi, &cmd[0], 2);
+	if (retval < 0) {
+		printk(KERN_INFO "SPI write error\n");
+		goto out;
+	}
+
 	retval = spi_read(spi, &buf[0], 2);
-	if (retval < 0)
+	if (retval < 0) {
 		printk(KERN_INFO "SPI read error\n");
-#endif
+		goto out;
+	}
+
 	val = buf[0] | buf[1] << 8;
 	return val;
+out:
+	return -1;
 }
 
 /* Write: 1 << 16*/
