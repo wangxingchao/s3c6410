@@ -1,13 +1,11 @@
 /*
- * MTD SPI driver for SPI FPGA (and similar) serial flash chips
+ * MTD SPI driver for SPI FPGA serial flash chips
  *
  * Author: Wang Xingchao wxc200@gmail.com 
  *
- * Copyright (c) 2012, Intel.
+ * Copyright (c) 2012.
  *
- * Some parts are based on lart.c by Abraham Van Der Merwe
- *
- * Cleaned up and generalized based on mtd_dataflash.c
+ * Part of code followed m25p80.c
  *
  * This code is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -86,6 +84,7 @@ struct fpga_data {
 };
 
 struct spifpga *fpga_flash;
+
 static ssize_t show_aa55(struct device *d,
 		struct device_attribute *attr, char *buf)
 {
@@ -196,6 +195,7 @@ static ssize_t show_write_value(struct device *d,
 	printk(KERN_INFO "write_value= %d\n", write_value);
 	return sprintf(buf, "0x%lX\n", write_value);
 }
+
 static DEVICE_ATTR(fpga_read_test, S_IRUGO, show_aa55, NULL);
 static DEVICE_ATTR(fpga_write_test, S_IRUGO, show_write_test, NULL);
 static DEVICE_ATTR(fpga_temp, S_IRUGO, show_temp, NULL);
@@ -321,7 +321,7 @@ static int spifpga_open(struct inode *inode, struct file *file)
 	return 0;
 }
 #define SPIFPGA_READ_TEMP	0x1
-#define SPIFPGA_READ_PRESSURE	0x2
+#define SPIFPGA_READ_PRESSURE	0x4
 #define SPIFPGA_READ_TEST	0x0
 
 static long spifpga_ioctl(struct file *file,
@@ -347,8 +347,8 @@ static long spifpga_ioctl(struct file *file,
 	}
 	buffer[0] = ret_val;
 	//modify buffer size
-	retval = copy_to_user(argp, buffer, sizeof(buffer) ? -EFAULT : 0;
-	return retval;
+	ret_val = copy_to_user(argp, buffer, sizeof(buffer) ? -EFAULT : 0);
+	return ret_val;
 }
 static unsigned int spifpga_poll(struct file *file, poll_table *wait)
 {
@@ -404,15 +404,6 @@ static int __devinit fpga_probe(struct spi_device *spi)
 	printk(KERN_INFO "SPI: Probe SPI FPGA\n");
 	fpga_flash = kzalloc(sizeof *fpga_flash, GFP_KERNEL);
 
-#if 0
-	ret = alloc_chrdev_region(&devid, 0, 2, "spi-fpga");
-	if (ret < 0)
-		printk(KERN_ERR "%s: failed to allocate char dev region\n",
-			__FILE__);
-	major = MAJOR(devid);
-	cdev_init(&spifpga_cdev, &spifpga_fileops);
-	cdev_add(&spifpga_cdev, devid, 2);
-#endif
 	ret = misc_register(&s3c_fpga_miscdev);
 #if 0
 	/* Initialize SPI GPIO for FPGA */
@@ -424,11 +415,6 @@ static int __devinit fpga_probe(struct spi_device *spi)
 	s3c_gpio_cfgpin(S3C64XX_GPC(3), S3C_GPIO_OUTPUT);		// Manual chip select pin as used in 6410_set_cs
 #endif
 
-#if 0
-	for (i=0; i<100; i++)
-		spi_test_aa55();
-	spi_u14_measure();
-#endif
 	ret = sysfs_create_group(&spi->dev.kobj,
 			&fpga_attribute_group);
 	if (ret) {
