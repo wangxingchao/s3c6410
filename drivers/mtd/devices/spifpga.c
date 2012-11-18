@@ -134,11 +134,18 @@ static ssize_t show_u14(struct device *d,
 	ret_val = spi_u14_measure();
 	return sprintf(buf, "0x%lX\n", ret_val);
 }
+static ssize_t show_inktemp(struct device *d,
+		struct device_attribute *attr, char *buf)
+{
+	unsigned long ret_val;
+	ret_val = spi_measure_data(ADDR_INK_TEMP);
+	return sprintf(buf, "0x%lX\n", ret_val);
+}
 static ssize_t show_temp(struct device *d,
 		struct device_attribute *attr, char *buf)
 {
 	unsigned long ret_val;
-	ret_val = spi_measure_data(0x2);
+	ret_val = spi_measure_data(ADDR_BOARD_TEMP);
 	return sprintf(buf, "0x%lX\n", ret_val);
 }
 static ssize_t show_stress(struct device *d,
@@ -212,6 +219,7 @@ static ssize_t show_write_value(struct device *d,
 static DEVICE_ATTR(fpga_read_test, S_IRUGO, show_aa55, NULL);
 static DEVICE_ATTR(fpga_write_test, S_IRUGO, show_write_test, NULL);
 static DEVICE_ATTR(fpga_temp, S_IRUGO, show_temp, NULL);
+static DEVICE_ATTR(fpga_inktemp, S_IRUGO, show_inktemp, NULL);
 static DEVICE_ATTR(fpga_u14, S_IRUGO, show_u14, NULL);
 static DEVICE_ATTR(fpga_stress, S_IRUGO, show_stress, NULL);
 static DEVICE_ATTR(fpga_addr, S_IRUGO | S_IWUGO, show_address, store_addr);
@@ -221,6 +229,7 @@ static struct attribute *fpga_sysfs_entries[] = {
 	&dev_attr_fpga_read_test.attr,
 	&dev_attr_fpga_write_test.attr,
 	&dev_attr_fpga_temp.attr,
+	&dev_attr_fpga_inktemp.attr,
 	&dev_attr_fpga_u14.attr,
 	&dev_attr_fpga_stress.attr,
 	&dev_attr_fpga_addr.attr,
