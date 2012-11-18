@@ -411,7 +411,6 @@ static int __devinit fpga_probe(struct spi_device *spi)
 	unsigned			i;
 	int ret;
 	dev_t devid;
-	int major;
 
 	spi_fpga = spi;
 	spi->bits_per_word = 16;
@@ -419,15 +418,6 @@ static int __devinit fpga_probe(struct spi_device *spi)
 	fpga_flash = kzalloc(sizeof *fpga_flash, GFP_KERNEL);
 
 	ret = misc_register(&s3c_fpga_miscdev);
-#if 0
-	/* Initialize SPI GPIO for FPGA */
-	ret = gpio_request(S3C64XX_GPC(3), "fpga");
-	if (ret) {
-		printk(KERN_ERR "SPI: Setup CS-Pin0 Error\n");
-	}
-	s3c_gpio_setpull(S3C64XX_GPC(3), S3C_GPIO_PULL_NONE);	// Manual chip select pin as used in 6410_set_cs
-	s3c_gpio_cfgpin(S3C64XX_GPC(3), S3C_GPIO_OUTPUT);		// Manual chip select pin as used in 6410_set_cs
-#endif
 
 	ret = sysfs_create_group(&spi->dev.kobj,
 			&fpga_attribute_group);
