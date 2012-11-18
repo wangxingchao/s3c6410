@@ -49,10 +49,10 @@
 /* A4-A7:0 A0-A3 */
 #define AA55		0x0
 #define U14		0x1
-#define PRESSURE	0x2
-#define INK_TEMP	0x3
+#define ADDR_PRESSURE	0x2
+#define ADDR_INK_TEMP	0x3
 #define WR_EN		0x4
-#define BOARD_TEMP	0x5
+#define ADDR_BOARD_TEMP	0x5
 
 #define CMD(l, h) (l&CMD_MASK | ((h&CMD_MASK)<<4))
 
@@ -362,17 +362,17 @@ static long spifpga_ioctl(struct file *file,
 				ret_val = spi_test_aa55();
 			break;
 		case SPIFPGA_READ_INK_TEMP:
-			value = spi_measure_data(0x3);
+			value = spi_measure_data(ADDR_INK_TEMP);
 			value = value >> 8;
 			value = value & 0xFF;
 			break;
 		case SPIFPGA_READ_PRESSURE:
-			value = spi_measure_data(0x2);
+			value = spi_measure_data(ADDR_PRESSURE);
 			value = value >> 8;
 			value = value & 0xFF;
 			break;
 		case SPIFPGA_READ_BOARD_TEMP:
-			value = spi_measure_data(0x5);
+			value = spi_measure_data(ADDR_BOARD_TEMP);
 			break;
 		case SPIFPGA_ADDR:
 			if (get_user(value, p))
