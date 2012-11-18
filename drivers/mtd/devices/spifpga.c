@@ -378,6 +378,7 @@ static long spifpga_ioctl(struct file *file,
 			value = spi_measure_data(fpga_addr);
 			break;
 		case SPIFPGA_UPDATE_BUFFER:
+		       	/* There are so many parameters need to update, ioctl will cause some delay...just update with such command and read an single buffer*/
 			printk(KERN_INFO "Update local buffer\n");
 			break;
 		default:
