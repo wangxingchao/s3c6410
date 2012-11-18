@@ -333,7 +333,8 @@ static int spifpga_open(struct inode *inode, struct file *file)
 	printk(KERN_INFO "SPI FPGA open operation, Qt Join!\n");
 	return 0;
 }
-#define SPIFPGA_READ_TEMP	0x1
+#define SPIFPGA_READ_INK_TEMP	0x1
+#define SPIFPGA_READ_BOARD_TEMP	0x2
 #define SPIFPGA_READ_PRESSURE	0x4
 #define SPIFPGA_READ_TEST	0x0
 
@@ -358,11 +359,18 @@ static long spifpga_ioctl(struct file *file,
 			for (i=0; i<loop; i++)
 				ret_val = spi_test_aa55();
 			break;
-		case SPIFPGA_READ_TEMP:
+		case SPIFPGA_READ_INK_TEMP:
 			value = spi_measure_data(0x2);
+			value = value >> 8;
+			value = value & 0xFF;
 			break;
 		case SPIFPGA_READ_PRESSURE:
 			value = spi_measure_data(0x3);
+			value = value >> 8;
+			value = value & 0xFF;
+			break;
+		case SPIFPGA_READ_BOARD_TEMP:
+			value = spi_measure_data(0x5);
 			break;
 		case SPIFPGA_ADDR:
 			if (get_user(value, p))
