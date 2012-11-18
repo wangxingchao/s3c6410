@@ -73,7 +73,6 @@ static int write_fpga(u16 addr, u16 val, struct spi_device *spi);
 static int read_fpga(u16 addr, struct spi_device *spi);
 int loop = 1;
 int write_value;
-static struct cdev spifpga_cdev;  /* use 1 cdev for all pins */
 struct timer_list fpga_timer;
 u8 fpga_address = 0x4;
 char buffer[32] = {10, 20, 30};
@@ -382,6 +381,7 @@ static int spifpga_release(struct inode *inode, struct file *file)
 {
 	return 0;
 }
+
 static const struct file_operations spifpga_fileops = {
 	.owner   = THIS_MODULE,
 	.write   = spifpga_write,
