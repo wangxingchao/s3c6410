@@ -408,8 +408,6 @@ static struct miscdevice s3c_fpga_miscdev = {
  */
 static int __devinit fpga_probe(struct spi_device *spi)
 {
-	struct flash_platform_data	*data;
-	struct flash_info		*info;
 	unsigned			i;
 	int ret;
 	dev_t devid;
@@ -442,7 +440,7 @@ static int __devinit fpga_probe(struct spi_device *spi)
 	return 0;
 }
 
-
+/* unregister and free operations here*/
 static int __devexit fpga_remove(struct spi_device *spi)
 {
 	return 0;
