@@ -140,10 +140,11 @@ static ssize_t show_inktemp(struct device *d,
 	unsigned long ret_val;
 	int value;
 	ret_val = spi_measure_data(ADDR_INK_TEMP);
+	printk(KERN_INFO"Show ink temp value: %d\n", ret_val);
 	value = ret_val;
 	value = value >> 8;
 	value = value & 0xFF;
-	printk(KERN_INFO"Show Pressure value(bit4~bit11): %d\n", value);
+	printk(KERN_INFO"Show ink tempture value(bit4~bit11): %d\n", value);
 	return sprintf(buf, "0x%lX\n", ret_val);
 }
 static ssize_t show_temp(struct device *d,
@@ -371,7 +372,7 @@ static long spifpga_ioctl(struct file *file,
 {
 	int i;
 	int ret_val;
-	void __user *argp = (void __user *)arg;
+	int __user *argp = (int __user *)arg;
 	int value;
 	printk(KERN_INFO "ioctl, cmd=0x%02x, arg=0x%02lx\n",
 		cmd, arg);
@@ -394,17 +395,15 @@ static long spifpga_ioctl(struct file *file,
 			value = spi_measure_data(ADDR_BOARD_TEMP);
 			break;
 		case SPIFPGA_ADDR:
-			if (get_user(value, p))
-				return -EFAULT;
-			fpga_addr = value&0xff;
+			get_user(value, argp);
+			fpga_address = value&0xff;
 			break;
 		case SPIFPGA_LOOP:
-			if (get_user(value, p))
-				return -EFAULT;
+			get_user(value, argp);
 			loop = value;
 			break;
 		case SPIFPGA_GET_DATA:/* set address before this ioctl */
-			value = spi_measure_data(fpga_addr);
+			value = spi_measure_data(fpga_address);
 			break;
 		case SPIFPGA_UPDATE_BUFFER:
 		       	/* There are so many parameters need to update, ioctl will cause some delay...just update with such command and read an single buffer*/
