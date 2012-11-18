@@ -336,6 +336,8 @@ static int spifpga_open(struct inode *inode, struct file *file)
 #define SPIFPGA_READ_TEMP	0x1
 #define SPIFPGA_READ_PRESSURE	0x4
 #define SPIFPGA_READ_TEST	0x0
+#define SPIFPGA_ADDR		0x10
+#define SPIFPGA_LOOP		0x11
 
 static long spifpga_ioctl(struct file *file,
 		unsigned int cmd, unsigned long arg)
@@ -343,6 +345,7 @@ static long spifpga_ioctl(struct file *file,
 	int i;
 	int ret_val;
 	void __user *argp = (void __user *)arg;
+	int value;
 	printk(KERN_INFO "ioctl, cmd=0x%02x, arg=0x%02lx\n",
 		cmd, arg);
 	switch(cmd) {
@@ -355,6 +358,16 @@ static long spifpga_ioctl(struct file *file,
 			break;
 		case SPIFPGA_READ_PRESSURE:
 			ret_val = spi_measure_data(0x3);
+			break;
+		case SPIFPGA_ADDR:
+			if (get_user(value, p))
+				return -EFAULT;
+			fpga_addr = value&0xff;
+			break;
+		case SPIFPGA_LOOP:
+			if (get_user(value, p))
+				return -EFAULT;
+			loop = value;
 			break;
 		default:
 			printk(KERN_INFO "Not Supported Command\n");
