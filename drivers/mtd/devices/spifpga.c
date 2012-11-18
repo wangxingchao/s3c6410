@@ -336,8 +336,10 @@ static int spifpga_open(struct inode *inode, struct file *file)
 #define SPIFPGA_READ_TEMP	0x1
 #define SPIFPGA_READ_PRESSURE	0x4
 #define SPIFPGA_READ_TEST	0x0
+
 #define SPIFPGA_ADDR		0x10
 #define SPIFPGA_LOOP		0x11
+#define SPIFPGA_GET_DATA	0x12
 
 /* update local buffer */
 #define SPIFPGA_UPDATE_BUFFER	0x20
@@ -371,6 +373,9 @@ static long spifpga_ioctl(struct file *file,
 			if (get_user(value, p))
 				return -EFAULT;
 			loop = value;
+			break;
+		case SPIFPGA_GET_DATA:/* set address before this ioctl */
+			value = spi_measure_data(fpga_addr);
 			break;
 		case SPIFPGA_UPDATE_BUFFER:
 			printk(KERN_INFO "Update local buffer\n");
