@@ -47,11 +47,12 @@
 #define CMD_MASK		0xf
 
 /* A4-A7:0 A0-A3 */
-#define AA55	0x0
-#define U14	0x1
-#define U89	0x2
-#define U90	0x3
-#define WR_EN	0x4
+#define AA55		0x0
+#define U14		0x1
+#define PRESSURE	0x2
+#define INK_TEMP	0x3
+#define WR_EN		0x4
+#define BOARD_TEMP	0x5
 
 #define CMD(l, h) (l&CMD_MASK | ((h&CMD_MASK)<<4))
 
@@ -85,8 +86,9 @@ struct spifpga {
 };
 
 struct fpga_data {
-	u32 temp;
+	u32 inktemp;
 	u32 pressure;
+	u32 temp;
 	u32 u14;
 	u32 timestamp;
 };
@@ -360,12 +362,12 @@ static long spifpga_ioctl(struct file *file,
 				ret_val = spi_test_aa55();
 			break;
 		case SPIFPGA_READ_INK_TEMP:
-			value = spi_measure_data(0x2);
+			value = spi_measure_data(0x3);
 			value = value >> 8;
 			value = value & 0xFF;
 			break;
 		case SPIFPGA_READ_PRESSURE:
-			value = spi_measure_data(0x3);
+			value = spi_measure_data(0x2);
 			value = value >> 8;
 			value = value & 0xFF;
 			break;
