@@ -138,7 +138,12 @@ static ssize_t show_inktemp(struct device *d,
 		struct device_attribute *attr, char *buf)
 {
 	unsigned long ret_val;
+	int value;
 	ret_val = spi_measure_data(ADDR_INK_TEMP);
+	value = ret_val;
+	value = value >> 8;
+	value = value & 0xFF;
+	printk(KERN_INFO"Show Pressure value(bit4~bit11): %d\n", value);
 	return sprintf(buf, "0x%lX\n", ret_val);
 }
 static ssize_t show_temp(struct device *d,
@@ -152,8 +157,13 @@ static ssize_t show_stress(struct device *d,
 		struct device_attribute *attr, char *buf)
 {
 	unsigned long ret_val=0;
-	ret_val = spi_measure_data(0x3);
+	int value;
+	ret_val = spi_measure_data(ADDR_PRESSURE);
 	printk(KERN_INFO"Show Pressure value: %d\n", ret_val);
+	value = ret_val;
+	value = value >> 8;
+	value = value & 0xFF;
+	printk(KERN_INFO"Show Pressure value(bit4~bit11): %d\n", value);
 	return sprintf(buf, "0x%lX\n", ret_val);
 }
 
