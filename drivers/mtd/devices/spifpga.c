@@ -76,7 +76,7 @@ int write_value;
 static struct cdev spifpga_cdev;  /* use 1 cdev for all pins */
 struct timer_list fpga_timer;
 u8 fpga_address = 0x4;
-int buffer[32];
+char buffer[32] = {10, 20, 30};
 
 struct spifpga {
 	struct spi_device	*spi;
@@ -153,8 +153,11 @@ static ssize_t show_address(struct device *d,
 		struct device_attribute *attr, char *buf)
 {
 	unsigned long ret_val=0;
-	ret_val = spi_measure_data(fpga_address);
-	printk(KERN_INFO "We are measuring %d addr value %d\n", fpga_address, ret_val);
+	int i;
+	for (i=0; i<loop; i++) {
+		ret_val = spi_measure_data(fpga_address);
+		printk(KERN_INFO "We are measuring %d addr value %d\n", fpga_address, ret_val);
+	}
 	return sprintf(buf, "0x%lX\n", ret_val);
 }
 static ssize_t store_addr(struct device *dev,
@@ -319,14 +322,16 @@ static ssize_t
 spifpga_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
 {
 	int ret;
+	printk(KERN_INFO "SPI FPGA read operation\n");
 	ret = copy_to_user(buf, buffer, count) ? -EFAULT : ret;
 	// we only return one 32bit data now
 	return ret;
 }
 
 static int spifpga_open(struct inode *inode, struct file *file)
+
 {
-	printk(KERN_INFO "SPI FPGA open operation\n");
+	printk(KERN_INFO "SPI FPGA open operation, Qt Join!\n");
 	return 0;
 }
 #define SPIFPGA_READ_TEMP	0x1
@@ -339,15 +344,17 @@ static long spifpga_ioctl(struct file *file,
 	int i;
 	int ret_val;
 	void __user *argp = (void __user *)arg;
+	printk(KERN_INFO "ioctl, cmd=0x%02x, arg=0x%02lx\n",
+		cmd, arg);
 	switch(cmd) {
-		case 	SPIFPGA_READ_TEST:
+		case SPIFPGA_READ_TEST:
 			for (i=0; i<loop; i++)
 				ret_val = spi_test_aa55();
 			break;
-		case	SPIFPGA_READ_TEMP:
+		case SPIFPGA_READ_TEMP:
 			ret_val = spi_measure_data(0x2);
 			break;
-		case	SPIFPGA_READ_PRESSURE:
+		case SPIFPGA_READ_PRESSURE:
 			ret_val = spi_measure_data(0x3);
 			break;
 		default:
@@ -356,7 +363,7 @@ static long spifpga_ioctl(struct file *file,
 	}
 	buffer[0] = ret_val;
 	//modify buffer size
-	ret_val = copy_to_user(argp, buffer, sizeof(buffer) ? -EFAULT : 0);
+	ret_val = copy_to_user(argp, buffer, sizeof(int));
 	return ret_val;
 }
 static unsigned int spifpga_poll(struct file *file, poll_table *wait)
@@ -381,7 +388,7 @@ static const struct file_operations spifpga_fileops = {
 	.read    = spifpga_read,
 	.open    = spifpga_open,
 	.poll	 = spifpga_poll,
-	.compat_ioctl	= spifpga_ioctl,
+	.unlocked_ioctl	= spifpga_ioctl,
 	.release = spifpga_release,
 };
 
