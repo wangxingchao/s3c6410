@@ -425,7 +425,7 @@ static int __devinit fpga_probe(struct spi_device *spi)
 		printk(KERN_INFO "FPGA: failed to create sysfs device attributes.\n");
 	}
 
-	/* Add Timer */
+	/* Add Timer to poll reading data*/
 	setup_timer(&fpga_timer, spi_fpga_timer_func, spi);
 	return 0;
 }
@@ -435,7 +435,6 @@ static int __devexit fpga_remove(struct spi_device *spi)
 {
 	return 0;
 }
-
 
 static struct spi_driver fpga_driver = {
 	.driver = {
@@ -448,23 +447,20 @@ static struct spi_driver fpga_driver = {
 
 };
 
-
 static int __init fpga_init(void)
 {
 	printk(KERN_INFO "SPI: SPI FPGA Driver Register\n");
 	return spi_register_driver(&fpga_driver);
 }
 
-
 static void __exit fpga_exit(void)
 {
 	spi_unregister_driver(&fpga_driver);
 }
 
-
 module_init(fpga_init);
 module_exit(fpga_exit);
 
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Mike Lavender");
-MODULE_DESCRIPTION("MTD SPI driver for ST M25Pxx flash chips");
+MODULE_AUTHOR("Wang Xingchao");
+MODULE_DESCRIPTION("SPI FPGA Driver");
