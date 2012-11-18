@@ -372,7 +372,7 @@ static long spifpga_ioctl(struct file *file,
 {
 	int i;
 	int ret_val;
-	int __user *argp = (int __user *)arg;
+	int __user *argp = (int __user *)arg; //note this pointer
 	int value;
 	printk(KERN_INFO "ioctl, cmd=0x%02x, arg=0x%02lx\n",
 		cmd, arg);
