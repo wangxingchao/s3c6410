@@ -339,6 +339,9 @@ static int spifpga_open(struct inode *inode, struct file *file)
 #define SPIFPGA_ADDR		0x10
 #define SPIFPGA_LOOP		0x11
 
+/* update local buffer */
+#define SPIFPGA_UPDATE_BUFFER	0x20
+
 static long spifpga_ioctl(struct file *file,
 		unsigned int cmd, unsigned long arg)
 {
@@ -354,10 +357,10 @@ static long spifpga_ioctl(struct file *file,
 				ret_val = spi_test_aa55();
 			break;
 		case SPIFPGA_READ_TEMP:
-			ret_val = spi_measure_data(0x2);
+			value = spi_measure_data(0x2);
 			break;
 		case SPIFPGA_READ_PRESSURE:
-			ret_val = spi_measure_data(0x3);
+			value = spi_measure_data(0x3);
 			break;
 		case SPIFPGA_ADDR:
 			if (get_user(value, p))
@@ -369,13 +372,16 @@ static long spifpga_ioctl(struct file *file,
 				return -EFAULT;
 			loop = value;
 			break;
+		case SPIFPGA_UPDATE_BUFFER:
+			printk(KERN_INFO "Update local buffer\n");
+			break;
 		default:
 			printk(KERN_INFO "Not Supported Command\n");
 			break;
 	}
 	buffer[0] = ret_val;
 	//modify buffer size
-	ret_val = copy_to_user(argp, buffer, sizeof(int));
+	ret_val = copy_to_user(argp, &value, sizeof(value));
 	return ret_val;
 }
 static unsigned int spifpga_poll(struct file *file, poll_table *wait)
