@@ -142,9 +142,9 @@ static ssize_t show_inktemp(struct device *d,
 	ret_val = spi_measure_data(ADDR_INK_TEMP);
 	printk(KERN_INFO"Show ink temp value: %d\n", ret_val);
 	value = ret_val;
-	value = value >> 8;
+	value = value >> 4;
 	value = value & 0xFF;
-	printk(KERN_INFO"Show ink tempture value(bit4~bit11): %d\n", value);
+	printk(KERN_INFO"Show ink tempture value(bit4~bit11): 0x%x\n", value);
 	return sprintf(buf, "0x%lX\n", ret_val);
 }
 static ssize_t show_temp(struct device *d,
@@ -162,9 +162,9 @@ static ssize_t show_stress(struct device *d,
 	ret_val = spi_measure_data(ADDR_PRESSURE);
 	printk(KERN_INFO"Show Pressure value: %d\n", ret_val);
 	value = ret_val;
-	value = value >> 8;
+	value = value >> 4;
 	value = value & 0xFF;
-	printk(KERN_INFO"Show Pressure value(bit4~bit11): %d\n", value);
+	printk(KERN_INFO"Show Pressure value(bit4~bit11): 0x%x\n", value);
 	return sprintf(buf, "0x%lX\n", ret_val);
 }
 
@@ -383,12 +383,12 @@ static long spifpga_ioctl(struct file *file,
 			break;
 		case SPIFPGA_READ_INK_TEMP:
 			value = spi_measure_data(ADDR_INK_TEMP);
-			value = value >> 8;
+			value = value >> 4;
 			value = value & 0xFF;
 			break;
 		case SPIFPGA_READ_PRESSURE:
 			value = spi_measure_data(ADDR_PRESSURE);
-			value = value >> 8;
+			value = value >> 4;
 			value = value & 0xFF;
 			break;
 		case SPIFPGA_READ_BOARD_TEMP:
