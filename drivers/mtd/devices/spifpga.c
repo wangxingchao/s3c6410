@@ -363,6 +363,7 @@ static int spifpga_open(struct inode *inode, struct file *file)
 #define SPIFPGA_ADDR		0x10
 #define SPIFPGA_LOOP		0x11
 #define SPIFPGA_GET_DATA	0x12
+#define SPIFPGA_WRITE_DATA	0x13
 
 /* update local buffer */
 #define SPIFPGA_UPDATE_BUFFER	0x20
@@ -404,6 +405,11 @@ static long spifpga_ioctl(struct file *file,
 			break;
 		case SPIFPGA_GET_DATA:/* set address before this ioctl */
 			value = spi_measure_data(fpga_address);
+			break;
+		case SPIFPGA_WRITE_DATA:
+			get_user(value, argp);
+			printk(KERN_INFO "Write CMD: %d to Addr: %d\n", value, fpga_address);
+			write_fpga(fpga_address, value, spi_fpga);
 			break;
 		case SPIFPGA_UPDATE_BUFFER:
 		       	/* There are so many parameters need to update, ioctl will cause some delay...just update with such command and read an single buffer*/
