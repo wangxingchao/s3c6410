@@ -102,7 +102,7 @@ static ssize_t show_aa55(struct device *d,
 	int i;
 	for (i=0; i<loop; i++)
 		ret_val = spi_test_aa55();
-	return sprintf(buf, "0x%lX\n", ret_val);
+	return sprintf(buf, "0x%x\n", ret_val);
 }
 static ssize_t show_write_test(struct device *d,
 		struct device_attribute *attr, char *buf)
@@ -125,14 +125,14 @@ static ssize_t show_write_test(struct device *d,
 		printk(KERN_INFO "FPGA: read Addr:%d value: 0x%x\n", fpga_address, value);
 	}
 #endif
-	return sprintf(buf, "0x%lX\n", value);
+	return sprintf(buf, "0x%x\n", value);
 }
 static ssize_t show_u14(struct device *d,
 		struct device_attribute *attr, char *buf)
 {
 	unsigned long ret_val;
 	ret_val = spi_u14_measure();
-	return sprintf(buf, "0x%lX\n", ret_val);
+	return sprintf(buf, "0x%x\n", ret_val);
 }
 static ssize_t show_inktemp(struct device *d,
 		struct device_attribute *attr, char *buf)
@@ -145,14 +145,14 @@ static ssize_t show_inktemp(struct device *d,
 	value = value >> 4;
 	value = value & 0xFF;
 	printk(KERN_INFO"Show ink tempture value(bit4~bit11): 0x%x\n", value);
-	return sprintf(buf, "0x%lX\n", ret_val);
+	return sprintf(buf, "0x%x\n", ret_val);
 }
 static ssize_t show_temp(struct device *d,
 		struct device_attribute *attr, char *buf)
 {
 	unsigned long ret_val;
 	ret_val = spi_measure_data(ADDR_BOARD_TEMP);
-	return sprintf(buf, "0x%lX\n", ret_val);
+	return sprintf(buf, "0x%x\n", ret_val);
 }
 static ssize_t show_stress(struct device *d,
 		struct device_attribute *attr, char *buf)
@@ -165,7 +165,7 @@ static ssize_t show_stress(struct device *d,
 	value = value >> 4;
 	value = value & 0xFF;
 	printk(KERN_INFO"Show Pressure value(bit4~bit11): 0x%x\n", value);
-	return sprintf(buf, "0x%lX\n", ret_val);
+	return sprintf(buf, "0x%x\n", ret_val);
 }
 
 static ssize_t show_address(struct device *d,
@@ -177,7 +177,7 @@ static ssize_t show_address(struct device *d,
 		ret_val = spi_measure_data(fpga_address);
 		printk(KERN_INFO "We are measuring %d addr value %d\n", fpga_address, ret_val);
 	}
-	return sprintf(buf, "0x%lX\n", ret_val);
+	return sprintf(buf, "0x%x\n", ret_val);
 }
 static ssize_t store_addr(struct device *dev,
 			       struct device_attribute *attr,
@@ -195,7 +195,7 @@ static ssize_t show_loop(struct device *d,
 {
 	unsigned long ret_val=0;
 	printk(KERN_INFO "Loop Value %d\n", loop);
-	return sprintf(buf, "0x%lX\n", ret_val);
+	return sprintf(buf, "0x%x\n", ret_val);
 }
 
 static ssize_t store_loop(struct device *dev,
@@ -293,7 +293,7 @@ static int write_fpga(u16 addr, u16 val, struct spi_device *spi)
 	cmd[0] = addr & 0xFF;
 	cmd[3] = (val >> 8) & 0xFF;
 	cmd[2] = val & 0xFF;
-	printk(KERN_INFO "SPI: write 0x%x to Addr 0x%d\n", val, addr);
+	printk(KERN_INFO "SPI: write 0x%x to Addr 0x%x\n", val, addr);
 	retval = spi_write(spi, cmd, 4);
 	if (retval < 0) {
 		printk(KERN_INFO "SPI write error\n");
