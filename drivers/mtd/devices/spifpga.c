@@ -116,7 +116,7 @@ static ssize_t show_write_test(struct device *d,
 		printk(KERN_INFO "SPI: Finish write test, read back test\n");
 		msleep(100);
 		value = read_fpga(fpga_address, spi_fpga);
-		printk(KERN_INFO "FPGA: read Addr:%d value: 0x%x\n", fpga_address, value);
+		printk(KERN_INFO "FPGA: read Addr:0x%x value: 0x%x\n", fpga_address, value);
 	}
 #if 0
 	printk(KERN_INFO "SPI: Finish write test, read back test\n");
@@ -408,7 +408,7 @@ static long spifpga_ioctl(struct file *file,
 			break;
 		case SPIFPGA_WRITE_DATA:
 			get_user(value, argp);
-			printk(KERN_INFO "Write CMD: %d to Addr: %d\n", value, fpga_address);
+			printk(KERN_INFO "Write CMD: 0x%x to Addr: 0x%x\n", value, fpga_address);
 			write_fpga(fpga_address, value, spi_fpga);
 			break;
 		case SPIFPGA_UPDATE_BUFFER:
