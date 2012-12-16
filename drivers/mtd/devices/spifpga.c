@@ -175,7 +175,7 @@ static ssize_t show_address(struct device *d,
 	int i;
 	for (i=0; i<loop; i++) {
 		ret_val = spi_measure_data(fpga_address);
-		printk(KERN_INFO "We are measuring %d addr value %d\n", fpga_address, ret_val);
+		printk(KERN_INFO "We are measuring 0x%x addr value 0x%x\n", fpga_address, ret_val);
 	}
 	return sprintf(buf, "0x%x\n", ret_val);
 }
@@ -186,7 +186,7 @@ static ssize_t store_addr(struct device *dev,
 {
 	unsigned long addr;
 	sscanf(buf, "%lX", &addr);
-	printk(KERN_INFO "Store %x As new Address\n", addr);
+	printk(KERN_INFO "Store 0x%x As new Address\n", addr);
 	fpga_address = addr&0xFF;
 	return count;
 }
@@ -204,7 +204,7 @@ static ssize_t store_loop(struct device *dev,
 			       size_t count)
 {
 	sscanf(buf, "%lX", &loop);
-	printk(KERN_INFO "Store %x As new Loop value\n", loop);
+	printk(KERN_INFO "Store 0x%x As new Loop value\n", loop);
 	return count;
 }
 static ssize_t store_write_value(struct device *dev,
@@ -213,7 +213,7 @@ static ssize_t store_write_value(struct device *dev,
 			       size_t count)
 {
 	sscanf(buf, "%lX", &write_value);
-	printk(KERN_INFO "Store %x As new write_value value\n", write_value);
+	printk(KERN_INFO "Store 0x%x As new write_value value\n", write_value);
 	printk(KERN_INFO "Will Write 0x%x to address 0x%x\n", write_value, fpga_address);
 	write_fpga(fpga_address, write_value, spi_fpga);
 	return count;
